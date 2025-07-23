@@ -22,7 +22,36 @@ export function Navbar() {
       const scrollTop =
         window.pageYOffset || document.documentElement.scrollTop;
       const top = rect.top + scrollTop - offset - 8; // 8px extra spacing
-      window.scrollTo({ top, behavior: "smooth" });
+      // console.log("Smooth scroll to:", id, "Offset:", offset, "Top:", top);
+      // Custom smooth scroll animation
+      const start = window.scrollY;
+      const change = top - start;
+      const duration = 500; // ms
+      let currentTime = 0;
+      function animateScroll() {
+        currentTime += 16;
+        const val = easeInOutQuad(currentTime, start, change, duration);
+        window.scrollTo(0, val);
+        if (currentTime < duration) {
+          requestAnimationFrame(animateScroll);
+        } else {
+          window.scrollTo(0, top);
+        }
+      }
+      function easeInOutQuad(
+        t: number,
+        b: number,
+        c: number,
+        d: number
+      ): number {
+        t /= d / 2;
+        if (t < 1) return (c / 2) * t * t + b;
+        t--;
+        return (-c / 2) * (t * (t - 2) - 1) + b;
+      }
+      animateScroll();
+    } else {
+      console.warn("Element not found for id:", id);
     }
   };
 

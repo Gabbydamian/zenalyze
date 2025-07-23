@@ -39,49 +39,47 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ThemeProvider>
-      <html lang="en" suppressHydrationWarning>
-        <head>
-          <meta
-            property="og:title"
-            content="Zenalyze – AI Journaling, Mood Tracking & Emotion Analysis App"
-          />
-          <meta
-            property="og:description"
-            content="AI-powered journaling app that helps you track moods, analyze emotions, and discover mental wellness patterns to boost clarity, focus, and productivity."
-          />
-          <meta property="og:type" content="website" />
-          <meta property="og:url" content="https://zenalyze.vercel.app/" />
-          <meta
-            property="og:image"
-            content="https://zenalyze.vercel.app/og-image.png"
-          />
-          <meta name="twitter:card" content="summary_large_image" />
-          <meta
-            name="twitter:title"
-            content="Zenalyze – AI Journaling, Mood Tracking & Emotion Analysis App"
-          />
-          <meta
-            name="twitter:description"
-            content="AI-powered journaling app that helps you track moods, analyze emotions, and discover mental wellness patterns to boost clarity, focus, and productivity."
-          />
-          <meta
-            name="twitter:image"
-            content="https://zenalyze.vercel.app/og-image.png"
-          />
-          <meta
-            name="keywords"
-            content="AI journaling app, mood tracking platform, emotion analysis tool, personal productivity AI, mental wellness tracker, daily check-in app, AI mental health assistant, voice journaling with transcription, insight-based journaling, self-awareness app"
-          />
-        </head>
-        <body
-          className={`
-            ${montserrat.variable} 
-            ${barlow.variable} antialiased`}
-        >
-          {children}
-        </body>
-      </html>
-    </ThemeProvider>
+    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
+      <head>
+        <meta
+          property="og:title"
+          content="Zenalyze – AI Journaling, Mood Tracking & Emotion Analysis App"
+        />
+        <meta
+          property="og:description"
+          content="AI-powered journaling app that helps you track moods, analyze emotions, and discover mental wellness patterns to boost clarity, focus, and productivity."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://zenalyze.vercel.app/" />
+        <meta
+          property="og:image"
+          content="https://zenalyze.vercel.app/og-image.png"
+        />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta
+          name="twitter:title"
+          content="Zenalyze – AI Journaling, Mood Tracking & Emotion Analysis App"
+        />
+        <meta
+          name="twitter:description"
+          content="AI-powered journaling app that helps you track moods, analyze emotions, and discover mental wellness patterns to boost clarity, focus, and productivity."
+        />
+        <meta
+          name="twitter:image"
+          content="https://zenalyze.vercel.app/og-image.png"
+        />
+        <meta
+          name="keywords"
+          content="AI journaling app, mood tracking platform, emotion analysis tool, personal productivity AI, mental wellness tracker, daily check-in app, AI mental health assistant, voice journaling with transcription, insight-based journaling, self-awareness app"
+        />
+      </head>
+      <body
+        className={`
+          ${montserrat.variable} 
+          ${barlow.variable} antialiased`}
+      >
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
+    </html>
   );
 }

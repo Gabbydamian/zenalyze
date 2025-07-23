@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/sidebar"
 
 import data from "./data.json"
+import { Button } from "@/components/ui/button"
 
 export default function Page() {
   return (
@@ -26,15 +27,25 @@ export default function Page() {
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              <SectionCards />
-              <div className="px-4 lg:px-6">
+              <div className="container mx-auto flex flex-col gap-8">
+                <div className="flex flex-col gap-2 px-4 lg:px-6 py-4 lg:py-12 lg:pb-6">
+                  <h1 className="text-4xl">This week at a glance</h1>
+                  <p className="text-md">
+                    You&apos;ve been feeling calm but tired lately. Want to
+                    reflect?
+                  </p>
+                  <Button className="bg-[var(--color-chart-2)] w-fit mt-4 py-5">Start Reflecting</Button>
+                </div>
+                <SectionCards />
+                <div className="px-4 lg:px-6">
                 <ChartAreaInteractive />
               </div>
-              <DataTable data={data} />
+                <DataTable data={data} />
+              </div>
             </div>
           </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }

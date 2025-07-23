@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { Flower, Mail, Twitter, Linkedin, Github, Heart } from "lucide-react";
+import { Flower, Mail, Twitter, Linkedin, Github } from "lucide-react";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();

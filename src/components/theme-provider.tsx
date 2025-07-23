@@ -10,7 +10,9 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<"light" | "dark">("light");
+  const [theme, setThemeState] = useState<"light" | "dark" | undefined>(
+    undefined
+  );
 
   // Set theme and persist to localStorage
   const setTheme = (newTheme: "light" | "dark") => {
@@ -28,7 +30,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Toggle theme
   const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
+    if (theme) setTheme(theme === "dark" ? "light" : "dark");
   };
 
   // On mount, read theme from localStorage or system preference
@@ -36,16 +38,27 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("theme");
       if (stored === "dark" || stored === "light") {
-        setTheme(stored);
+        setThemeState(stored);
+        const html = document.documentElement;
+        if (stored === "dark") {
+          html.classList.add("dark");
+        } else {
+          html.classList.remove("dark");
+        }
       } else {
         // System preference
         const prefersDark = window.matchMedia(
           "(prefers-color-scheme: dark)"
         ).matches;
-        setTheme(prefersDark ? "dark" : "light");
+        setThemeState(prefersDark ? "dark" : "light");
+        const html = document.documentElement;
+        if (prefersDark) {
+          html.classList.add("dark");
+        } else {
+          html.classList.remove("dark");
+        }
       }
     }
-    // eslint-disable-next-line
   }, []);
 
   // Ensure .dark class is always in sync
@@ -58,6 +71,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, [theme]);
 
+  // Prevent theme flash: only render children after theme is set
+  if (!theme) return null;
   return (
     <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
       {children}

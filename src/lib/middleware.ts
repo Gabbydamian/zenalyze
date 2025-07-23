@@ -40,6 +40,7 @@ export async function updateSession(request: NextRequest) {
   const user = data?.claims
 
 
+
   // Check if the current path is public
   const isPublic = PUBLIC_URLS.some((publicPath) => {
     if (publicPath === '/') {
@@ -47,6 +48,13 @@ export async function updateSession(request: NextRequest) {
     }
     return request.nextUrl.pathname.startsWith(publicPath);
   });
+
+  // If user is authenticated and on the landing page, redirect to dashboard
+  if (user && request.nextUrl.pathname === '/') {
+    const url = request.nextUrl.clone();
+    url.pathname = '/dashboard';
+    return NextResponse.redirect(url);
+  }
 
   if (!user && !isPublic) {
     // no user, potentially respond by redirecting the user to the login page
