@@ -1,4 +1,31 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Zenalyze
+
+## 🧠 SEO Descriptions
+
+### Short (~160 characters)
+
+AI-powered journaling app that helps you track moods, analyze emotions, and discover mental wellness patterns to boost clarity, focus, and productivity.
+
+### Medium (~300 characters)
+
+Discover an AI journaling and emotional wellness platform designed to transform your thoughts into insights. Track moods, record voice notes, detect emotional patterns, and improve mental clarity with powerful analytics and daily reflections. Light, dark, and pastel themes included.
+
+### Long (~500 characters)
+
+This AI-powered wellness and productivity platform helps you turn daily thoughts, voice notes, and emotions into actionable insights. Whether you're journaling, checking in on your mood, or seeking patterns in your mental state, this tool uses advanced AI to analyze your data and help you grow. With a clean design, multiple visual themes (pastel, professional, light/dark), and a secure Supabase backend, it's the ideal companion for emotional clarity, goal tracking, and personal growth.
+
+## 🔍 Suggested SEO Keywords
+
+- AI journaling app
+- mood tracking platform
+- emotion analysis tool
+- personal productivity AI
+- mental wellness tracker
+- daily check-in app
+- AI mental health assistant
+- voice journaling with transcription
+- insight-based journaling
+- self-awareness app
 
 ## Getting Started
 

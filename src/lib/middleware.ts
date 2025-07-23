@@ -1,5 +1,8 @@
+
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+
+const PUBLIC_URLS = ['/', '/auth/login', '/auth', '/auth/forgot-password', '/auth/sign-up', '/auth/sign-up-success', '/favicon.ico', '/sitemap.xml', '/robots.txt'];
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -36,15 +39,20 @@ export async function updateSession(request: NextRequest) {
 
   const user = data?.claims
 
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/login') &&
-    !request.nextUrl.pathname.startsWith('/auth')
-  ) {
+
+  // Check if the current path is public
+  const isPublic = PUBLIC_URLS.some((publicPath) => {
+    if (publicPath === '/') {
+      return request.nextUrl.pathname === '/';
+    }
+    return request.nextUrl.pathname.startsWith(publicPath);
+  });
+
+  if (!user && !isPublic) {
     // no user, potentially respond by redirecting the user to the login page
-    const url = request.nextUrl.clone()
-    url.pathname = '/auth/login'
-    return NextResponse.redirect(url)
+    const url = request.nextUrl.clone();
+    url.pathname = '/auth/login';
+    return NextResponse.redirect(url);
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
