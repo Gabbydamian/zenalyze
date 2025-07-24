@@ -1,24 +1,28 @@
 "use client";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 const testimonials = [
   {
     name: "Sarah K., Product Manager",
-    quote: "Clarifai helped me spot burnout before it hit me.",
+    quote:
+      "Clarifai helped me spot burnout before it hit me. Now I journal daily.",
     avatar:
       "https://images.unsplash.com/photo-1511367461989-f85a21fda167?auto=format&fit=facearea&w=48&h=48&facepad=2&q=80",
   },
   {
     name: "Jide O., Designer",
-    quote: "I used to journal sporadically. Now I never miss a day.",
+    quote:
+      "I used to journal sporadically. Now I never miss a day. The insights are invaluable.",
     avatar:
       "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=facearea&w=48&h=48&facepad=2&q=80",
   },
   {
     name: "Lina S., Therapist",
-    quote: "The mood tracking is genius. It feels like the app knows me.",
+    quote:
+      "The mood tracking is genius. It feels like the app knows me. I recommend it to all my clients.",
     avatar:
-      "https://images.unsplash.com/photo-1519340333755-c1aa5571fd46?auto=format&fit=facearea&w=48&h=48&facepad=2&q=80",
+      "https://images.unsplash.com/photo-1659377229079-8f0b34c64077?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8cHJvZmVzc2lvbmElQzQlQkN3b21hbiUyMDUwc3xlbnwwfHwwfHx8MA%3D%3D",
   },
 ];
 
@@ -45,10 +49,12 @@ export function TestimonialsSection() {
               viewport={{ once: true }}
               transition={{ delay: 0.1 * i, duration: 0.7, ease: "easeOut" }}
             >
-              <img
+              <Image
                 src={t.avatar}
                 alt="User avatar"
-                className="rounded-full mb-2"
+                className="rounded-full mb-2 aspect-square object-cover"
+                width={72}
+                height={72}
               />
               <p className="text-[var(--color-muted-foreground)] text-center mb-4">
                 “{t.quote}”

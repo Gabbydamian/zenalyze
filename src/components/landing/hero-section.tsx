@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
  */
 export function HeroSection() {
   return (
-    <section className="relative flex flex-col items-center justify-center min-h-[70vh] py-16 bg-[var(--color-background)] overflow-hidden">
+    <section className="relative flex flex-col items-center justify-center min-h-[70vh] py-0 lg:py-16 bg-[var(--color-background)] overflow-hidden px-6 lg:px-0">
       {/* Noise background overlay */}
       <div
         aria-hidden="true"
@@ -40,7 +40,7 @@ export function HeroSection() {
         helps you understand your thoughts, track your emotions, and unlock
         insight from your day.
       </motion.p>
-      <div className="flex gap-4">
+      <div className="flex flex-col lg:flex-row gap-4">
         <motion.button
           // whileHover={{ scale: 1.05 }}
           className="px-6 py-3 rounded-full bg-[var(--color-primary)] text-[var(--color-primary-foreground)] font-semibold focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)] focus:ring-offset-2 cursor-pointer transition-colors duration-300 ease-in-out hover:bg-gradient-to-r hover:from-orange-500 hover:via-pink-500 hover:to-pink-400"

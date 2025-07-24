@@ -97,7 +97,7 @@ const data = {
     { title: "Settings", url: "/settings", icon: IconSettings },
     { title: "Help", url: "/help", icon: IconHelp },
     { title: "Feedback", url: "/feedback", icon: IconFileWord },
-    { title: "Search", url: "/search", icon: IconSearch },
+    // { title: "Search", url: "/search", icon: IconSearch },
   ],
   // documents: [
   //   { name: "Data Library", url: "/library", icon: IconDatabase },
@@ -130,7 +130,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   );

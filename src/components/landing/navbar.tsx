@@ -95,8 +95,8 @@ export function Navbar() {
             Pricing
           </a>
         </div>
-        {/* Dark mode toggle and Signup button */}
-        <div className="flex items-center gap-2">
+        {/* Dark mode toggle and Login button */}
+        <div className="flex items-center gap-4">
           <button
             aria-label="Toggle dark mode"
             onClick={toggleTheme}
@@ -135,9 +135,9 @@ export function Navbar() {
               </svg>
             )}
           </button>
-          <Link href="/auth/sign-up">
+          <Link href="/auth/login">
             <button className="px-6 py-2 rounded-full bg-[var(--color-primary)] text-[var(--color-primary-foreground)] text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)] focus:ring-offset-2 cursor-pointer transition-colors duration-300 ease-in-out hover:bg-gradient-to-r hover:from-orange-500 hover:via-pink-500 hover:to-pink-400 hover:text-white">
-              Sign Up
+              Get Started
             </button>
           </Link>
         </div>

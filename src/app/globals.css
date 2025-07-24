@@ -35,6 +35,10 @@ button {
   cursor: pointer;
 }
 
+a:hover{
+  color: var(--color-ring)
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

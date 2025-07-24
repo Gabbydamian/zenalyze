@@ -1,40 +1,47 @@
 "use client";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 export function WhySection() {
   const features = [
     {
       icon: (
-        <img
-          src="https://images.unsplash.com/photo-1465101178521-c1a9136a3b99?auto=format&fit=facearea&w=80&h=80&facepad=2&q=80"
+        <Image
+          src="https://images.unsplash.com/photo-1598826739205-d09823c3bc3d?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
           alt="Mindful Reflection"
-          className="rounded-full"
+          className="rounded-lg mx-auto aspect-video object-cover"
+          width={500}
+          height={300}
         />
       ),
       title: "Mindful Reflection",
-      desc: "Slow down and reconnect",
+      desc: "Slow down and reconnect with yourself",
     },
     {
       icon: (
-        <img
-          src="https://images.unsplash.com/photo-1503676382389-4809596d5290?auto=format&fit=facearea&w=80&h=80&facepad=2&q=80"
+        <Image
+          src="https://images.unsplash.com/photo-1458682625221-3a45f8a844c7?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
           alt="Pattern Recognition"
-          className="rounded-full"
+          className="rounded-lg mx-auto aspect-video object-cover"
+          width={500}
+          height={300}
         />
       ),
-      title: "Pattern Recognition",
-      desc: "Track trends and triggers",
+      title: "Advanced Pattern Recognition",
+      desc: "Track trends and triggers over time",
     },
     {
       icon: (
-        <img
-          src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=facearea&w=80&h=80&facepad=2&q=80"
+        <Image
+          src="https://images.unsplash.com/photo-1633265486064-086b219458ec?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
           alt="Privacy by Design"
-          className="rounded-full"
+          className="rounded-lg mx-auto aspect-video object-cover"
+          width={500}
+          height={300}
         />
       ),
       title: "Privacy by Design",
-      desc: "Fully encrypted, you own your data",
+      desc: "Fully encrypted, you own your data and insights",
     },
   ];
   return (

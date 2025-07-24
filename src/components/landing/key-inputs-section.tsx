@@ -1,45 +1,53 @@
 "use client";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 /**
  * KeyInputsSection - Shows the three main input modes: text, voice, mood.
  */
 export function KeyInputsSection() {
-  const features = [
-    {
-      icon: (
-        <img
-          src="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=facearea&w=120&h=120&facepad=2&q=80"
-          alt="Text Journaling"
-          className="rounded-2xl w-20 h-20 object-cover"
-        />
-      ),
-      title: "Text Journaling",
-      desc: "Clean editor, auto-save, templates",
-    },
-    {
-      icon: (
-        <img
-          src="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=facearea&w=120&h=120&facepad=2&q=80"
-          alt="Voice Entries"
-          className="rounded-2xl w-20 h-20 object-cover"
-        />
-      ),
-      title: "Voice Entries",
-      desc: "Record and auto-transcribe with AI",
-    },
-    {
-      icon: (
-        <img
-          src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=facearea&w=120&h=120&facepad=2&q=80"
-          alt="Mood Check-ins"
-          className="rounded-2xl w-20 h-20 object-cover"
-        />
-      ),
-      title: "Mood Check-ins",
-      desc: "Quick slider + emotion picker",
-    },
-  ];
+const features = [
+  {
+    icon: (
+      <Image
+        src="https://images.unsplash.com/photo-1569360531163-a61fa3da86ee?q=80&w=736&auto=format&fit=crop&ixlib=rb-4.1.0"
+        alt="Text Journaling"
+        className="rounded-lg mx-auto aspect-video object-cover"
+        width={500}
+        height={300}
+      />
+    ),
+    title: "Text Journaling",
+    desc: "Capture thoughts with a focused, minimalist editor that saves your progress automatically. Free-write to reflect deeply, your way.",
+  },
+  {
+    icon: (
+      <Image
+        src="https://images.unsplash.com/photo-1650654631729-ce2fe3a00d1d?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0"
+        alt="Voice Entries"
+        className="rounded-lg mx-auto aspect-video object-cover"
+        width={500}
+        height={300}
+      />
+    ),
+    title: "Voice Entries",
+    desc: "Speak freely when typing feels like too much. Record your voice and let our AI convert it into text — hands-free, human-first journaling.",
+  },
+  {
+    icon: (
+      <Image
+        src="https://images.unsplash.com/photo-1582801396492-705377f39876?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0"
+        alt="Mood Check-ins"
+        className="rounded-lg mx-auto aspect-video object-cover"
+        width={500}
+        height={300}
+      />
+    ),
+    title: "Mood Check-ins",
+    desc: "A quick pulse on how you're feeling. Log your mood in seconds using a slider and emotion chips — then track patterns over time effortlessly.",
+  },
+];
+
 
   return (
     <section className="relative py-20 bg-[var(--color-card)]/70 bg-dot-pattern">

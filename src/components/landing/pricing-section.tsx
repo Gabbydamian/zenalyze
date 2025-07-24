@@ -11,7 +11,13 @@ export function PricingSection() {
       price: "$0",
       priceSuffix: "/mo",
       button: "Get Started",
-      features: ["50 entries/mo", "7-day history", "Basic insights"],
+      features: [
+        "30 entries/mo",
+        "3-day history",
+        "Basic insights",
+        "Community support",
+        "Limited integrations",
+      ],
     },
     {
       name: "Pro",
@@ -22,7 +28,7 @@ export function PricingSection() {
         </span>
       ),
       subtitle: "For growing users",
-      price: "$3",
+      price: "$7",
       priceSuffix: "/mo",
       button: "Try Pro",
       features: [
@@ -30,6 +36,8 @@ export function PricingSection() {
         "30-day history",
         "Advanced insights",
         "Email support",
+        "Export & integrations",
+        "Everything in Free",
       ],
     },
     {
@@ -37,14 +45,17 @@ export function PricingSection() {
       icon: <Crown className="w-8 h-8 text-[var(--color-foreground)]" />,
       badge: null,
       subtitle: "Unlock everything",
-      price: "$6",
+      price: "$19",
       priceSuffix: "/mo",
-      button: "Compare Plans",
+      button: "Unlock Premium",
       features: [
         "Unlimited entries",
         "Full insights & analytics",
         "Priority support",
         "Export & integrations",
+        "Priority access to new features",
+        "Customizable dashboard",
+        "Everything in Pro",
       ],
     },
   ];
@@ -95,7 +106,7 @@ export function PricingSection() {
                   {plan.features.map((feature) => (
                     <li
                       key={feature}
-                      className="flex items-center gap-2 text-[var(--color-muted-foreground)]"
+                      className="flex items-center justify-center lg:justify-start gap-2 text-[var(--color-muted-foreground)]"
                     >
                       <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
                       <span className="text-left">{feature}</span>

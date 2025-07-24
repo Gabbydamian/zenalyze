@@ -3,6 +3,7 @@ import { Montserrat } from "next/font/google";
 import { Barlow_Condensed } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "sonner";
 
 const montserrat = Montserrat({
   variable: "--montserrat",
@@ -78,7 +79,10 @@ export default function RootLayout({
           ${montserrat.variable} 
           ${barlow.variable} antialiased`}
       >
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          {children}
+          <Toaster position="bottom-right" richColors/>
+        </ThemeProvider>
       </body>
     </html>
   );

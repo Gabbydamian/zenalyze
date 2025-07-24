@@ -8,7 +8,7 @@ export function AIInsightSection() {
       <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row gap-12 items-center">
         {/* Left: Animated mockup/illustration */}
         <motion.div
-          className="flex justify-center w-1/2 md:w-2/5"
+          className="flex justify-center w-full md:w-2/5"
           initial={{ opacity: 0, x: -40 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
@@ -26,23 +26,23 @@ export function AIInsightSection() {
         </motion.div>
         {/* Right: Text and bullets */}
         <motion.div
-          className="w-1/2 md:w-3/5"
+          className="w-full md:w-3/5 px-2 md:px-0"
           initial={{ opacity: 0, x: 40 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.2 }}
         >
-          <h2 className="text-2xl md:text-3xl font-bold mb-4 text-[var(--color-foreground)]">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4 text-[var(--color-foreground)] text-center md:text-left">
             AI that listens — and makes sense of it all.
           </h2>
-          <p className="text-[var(--color-muted-foreground)] mb-6 text-lg">
+          <p className="text-[var(--color-muted-foreground)] mb-6 text-lg text-center md:text-left">
             Behind every entry, Clarifai’s AI analyzes sentiment, detects
             emotions, recognizes recurring patterns, and extracts what matters.
             <br />
             It’s like having a personal therapist, data scientist, and coach —
             all in one.
           </p>
-          <ul className="space-y-3 text-base list-disc list-inside">
+          <ul className="space-y-3 text-base list-disc list-inside text-center md:text-left text-[var(--color-muted-foreground)]">
             <li>Sentiment & emotion recognition</li>
             <li>Goal and worry detection</li>
             <li>Entry summarization</li>
