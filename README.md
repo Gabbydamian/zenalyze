@@ -1,4 +1,4 @@
-# Zenalyze
+# ClareAi
 
 ## 🧠 SEO Descriptions
 

@@ -68,8 +68,10 @@ const features = [
           viewport={{ once: true }}
           transition={{ delay: 0.2, duration: 0.7 }}
         >
-          Whether you're deep in reflection or just need a quick check-in, we
-          adapt to your rhythm.
+          {/* Whether you're deep in reflection or just need a quick check-in, we
+          adapt to your rhythm. */}
+          Whether you're deep in reflection or just need a quick check-in, Clare
+          adapts to your rhythm — text, voice, or mood-based.
         </motion.p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {features.map((f, i) => (

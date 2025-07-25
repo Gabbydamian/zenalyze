@@ -25,7 +25,7 @@ const faqs = [
     a: "We support all major formats including PDF, DOCX, TXT, and more. Our AI can extract insights from virtually any text-based document.",
   },
   {
-    q: "Can I use Zenalyze with my existing tools?",
+    q: "Can I use ClareAi with my existing tools?",
     a: "Yes! We offer seamless integrations with popular platforms and APIs. You can also export your data to use with your existing analytics tools.",
   },
   {
@@ -49,7 +49,7 @@ export function FAQSection() {
             Frequently Asked Questions
           </h2>
           <p className="text-[var(--color-muted-foreground)] text-lg">
-            Everything you need to know about Zenalyze
+            Everything you need to know about ClareAi
           </p>
         </motion.div>
 
@@ -83,7 +83,7 @@ export function FAQSection() {
             ))}
           </Accordion>
         </motion.div>
-{/* 
+        {/* 
         <motion.div
           className="text-center mt-12"
           initial={{ opacity: 0, y: 20 }}

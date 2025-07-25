@@ -10,6 +10,7 @@ import {
 
 import data from "./data.json"
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 export default function Page() {
   return (
@@ -34,12 +35,19 @@ export default function Page() {
                     You&apos;ve been feeling calm but tired lately. Want to
                     reflect?
                   </p>
-                  <Button className="bg-[var(--color-chart-2)] w-fit mt-4 py-5">Start Reflecting</Button>
+                  <Button className="bg-[var(--color-chart-2)] w-fit mt-4 p-0 ">
+                    <Link
+                      href="/journal"
+                      className="text-white link-remove p-6"
+                    >
+                      Start Reflecting
+                    </Link>
+                  </Button>
                 </div>
                 <SectionCards />
                 <div className="px-4 lg:px-6">
-                <ChartAreaInteractive />
-              </div>
+                  <ChartAreaInteractive />
+                </div>
                 <DataTable data={data} />
               </div>
             </div>

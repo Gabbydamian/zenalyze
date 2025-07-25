@@ -36,8 +36,10 @@ export function AIInsightSection() {
             AI that listens — and makes sense of it all.
           </h2>
           <p className="text-[var(--color-muted-foreground)] mb-6 text-lg text-center md:text-left">
-            Behind every entry, Clarifai’s AI analyzes sentiment, detects
-            emotions, recognizes recurring patterns, and extracts what matters.
+            {/* Behind every entry, Clarifai’s AI analyzes sentiment, detects
+            emotions, recognizes recurring patterns, and extracts what matters. */}
+            ClareAI uses cutting-edge language models to analyze your journal
+            entries, detect emotional patterns, and surface what really matters.
             <br />
             It’s like having a personal therapist, data scientist, and coach —
             all in one.
@@ -45,8 +47,8 @@ export function AIInsightSection() {
           <ul className="space-y-3 text-base list-disc list-inside text-center md:text-left text-[var(--color-muted-foreground)]">
             <li>Sentiment & emotion recognition</li>
             <li>Goal and worry detection</li>
-            <li>Entry summarization</li>
-            <li>Mood pattern mapping</li>
+            <li>Smart entry summarization</li>
+            <li>Personalized mood insights</li>
           </ul>
         </motion.div>
       </div>

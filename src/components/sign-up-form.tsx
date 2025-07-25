@@ -17,7 +17,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import Image from "next/image"
+import Image from "next/image";
 
 export function SignUpForm({
   className,
@@ -73,7 +73,7 @@ export function SignUpForm({
                     className="flex items-center gap-2 font-head text-xl font-bold text-[var(--color-primary)] hover:text-[#f66774] transition-colors duration-300 ease-in-out"
                   >
                     <span className="flex items-center gap-2 text-2xl">
-                      <Flower className="w-6 h-6" /> Zenalyze
+                      <Flower className="w-6 h-6" /> ClareAi
                     </span>
                   </Link>
                 </div>

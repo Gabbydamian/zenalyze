@@ -17,7 +17,7 @@ export function Footer() {
               className="flex items-center gap-2 font-head text-xl font-bold text-[var(--color-primary)] hover:text-[#f66774] transition-colors duration-300 ease-in-out"
             >
               <Flower className="w-6 h-6" />
-              Zenalyze
+              ClareAi
             </Link>
             <p className="text-[var(--color-muted-foreground)] text-sm leading-relaxed">
               Transform your data into actionable insights with AI-powered
@@ -162,7 +162,7 @@ export function Footer() {
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="flex items-center space-x-2 text-[var(--color-muted-foreground)] text-sm">
-              <span>© {currentYear} Zenalyze. All rights reserved.</span>
+              <span>© {currentYear} ClareAi. All rights reserved.</span>
               {/* <span>•</span>
               <span>Made with</span>
               <Heart className="w-4 h-4 text-red-500" />

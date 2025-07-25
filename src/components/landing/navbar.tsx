@@ -68,7 +68,7 @@ export function Navbar() {
         >
           {/* You can replace this with an <Image> if you have a logo */}
           <span className="flex items-center gap-2">
-            <Flower className="w-6 h-6" /> Zenalyze
+            <Flower className="w-6 h-6" /> ClareAi
           </span>
         </Link>
         {/* Nav links */}

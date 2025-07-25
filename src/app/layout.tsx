@@ -4,6 +4,7 @@ import { Barlow_Condensed } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "sonner";
+import { QueryProvider } from "./providers/queryProvider";
 
 const montserrat = Montserrat({
   variable: "--montserrat",
@@ -17,7 +18,7 @@ const barlow = Barlow_Condensed({
 });
 
 export const metadata: Metadata = {
-  title: "Zenalyze – AI Journaling, Mood Tracking & Emotion Analysis App",
+  title: "ClareAi – AI Journaling, Mood Tracking & Emotion Analysis App",
   description:
     "AI-powered journaling app that helps you track moods, analyze emotions, and discover mental wellness patterns to boost clarity, focus, and productivity.",
   keywords: [
@@ -34,6 +35,7 @@ export const metadata: Metadata = {
   ],
 };
 
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -44,22 +46,22 @@ export default function RootLayout({
       <head>
         <meta
           property="og:title"
-          content="Zenalyze – AI Journaling, Mood Tracking & Emotion Analysis App"
+          content="ClareAi – AI Journaling, Mood Tracking & Emotion Analysis App"
         />
         <meta
           property="og:description"
           content="AI-powered journaling app that helps you track moods, analyze emotions, and discover mental wellness patterns to boost clarity, focus, and productivity."
         />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://zenalyze.vercel.app/" />
+        <meta property="og:url" content="https://clareai.vercel.app/" />
         <meta
           property="og:image"
-          content="https://zenalyze.vercel.app/og-image.png"
+          content="https://clareai.vercel.app/og-image.png"
         />
         <meta name="twitter:card" content="summary_large_image" />
         <meta
           name="twitter:title"
-          content="Zenalyze – AI Journaling, Mood Tracking & Emotion Analysis App"
+          content="ClareAi – AI Journaling, Mood Tracking & Emotion Analysis App"
         />
         <meta
           name="twitter:description"
@@ -67,7 +69,7 @@ export default function RootLayout({
         />
         <meta
           name="twitter:image"
-          content="https://zenalyze.vercel.app/og-image.png"
+          content="https://clareai.vercel.app/og-image.png"
         />
         <meta
           name="keywords"
@@ -79,10 +81,13 @@ export default function RootLayout({
           ${montserrat.variable} 
           ${barlow.variable} antialiased`}
       >
-        <ThemeProvider>
-          {children}
-          <Toaster position="bottom-right" richColors/>
-        </ThemeProvider>
+        {" "}
+        <QueryProvider>
+          <ThemeProvider>
+            {children}
+            <Toaster position="bottom-right" richColors />
+          </ThemeProvider>
+        </QueryProvider>
       </body>
     </html>
   );

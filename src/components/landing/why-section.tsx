@@ -15,7 +15,7 @@ export function WhySection() {
         />
       ),
       title: "Mindful Reflection",
-      desc: "Slow down and reconnect with yourself",
+      desc: "Clare helps you pause, breathe, and reconnect. Clarity begins with presence.",
     },
     {
       icon: (
@@ -28,7 +28,7 @@ export function WhySection() {
         />
       ),
       title: "Advanced Pattern Recognition",
-      desc: "Track trends and triggers over time",
+      desc: "Clare identifies emotional loops and recurring thoughts. Recognize what drives your moods.",
     },
     {
       icon: (
@@ -41,7 +41,7 @@ export function WhySection() {
         />
       ),
       title: "Privacy by Design",
-      desc: "Fully encrypted, you own your data and insights",
+      desc: "Everything you journal stays yours. Fully encrypted. Never shared.",
     },
   ];
   return (

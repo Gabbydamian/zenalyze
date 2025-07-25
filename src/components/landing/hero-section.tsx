@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
  */
 export function HeroSection() {
   return (
-    <section className="relative flex flex-col items-center justify-center min-h-[70vh] py-0 lg:py-16 bg-[var(--color-background)] overflow-hidden px-6 lg:px-0">
+    <section className="relative flex flex-col items-center justify-center min-h-[70vh] py-0 lg:py-40 bg-[var(--color-background)] overflow-hidden px-6 lg:px-0">
       {/* Noise background overlay */}
       <div
         aria-hidden="true"
@@ -31,14 +31,19 @@ export function HeroSection() {
         </span>
       </motion.h1>
       <motion.p
-        className="text-lg md:text-xl text-center text-[var(--color-muted-foreground)] max-w-2xl mb-8 leading-relaxed"
+        className="text-lg md:text-xl text-center text-[var(--color-muted-foreground)] max-w-3xl mb-8 leading-relaxed"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4, duration: 0.8 }}
       >
         Journal, reflect, and grow with an AI-powered wellness platform that
-        helps you understand your thoughts, track your emotions, and unlock
-        insight from your day.
+        {/* helps you understand your thoughts, track your emotions, and unlock
+        insight from your day. */}
+        Journal, reflect, and grow with a wellness platform powered by{" "}
+        <span className="bg-gradient-to-r from-orange-300 to-pink-400 bg-clip-text text-transparent">
+          Clare
+        </span>{" "}
+        — your intelligent guide to mental clarity and emotional insight.
       </motion.p>
       <div className="flex flex-col lg:flex-row gap-4">
         <motion.button

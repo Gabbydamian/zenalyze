@@ -35,8 +35,12 @@ button {
   cursor: pointer;
 }
 
-a:hover{
+a:hover {
   color: var(--color-ring)
+}
+
+a.link-remove:hover {
+  color: inherit;
 }
 
 @custom-variant dark (&:is(.dark *));

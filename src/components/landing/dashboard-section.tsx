@@ -38,11 +38,13 @@ export function DashboardSection() {
           transition={{ duration: 0.8, delay: 0.2 }}
         >
           <h2 className="text-2xl md:text-3xl font-bold mb-4 text-[var(--color-foreground)] text-center md:text-left">
-            Your insights, visualized.
+            Your growth, visualized.
           </h2>
           <p className="text-[var(--color-muted-foreground)] mb-6 text-lg text-center md:text-left">
-            Understand yourself better with interactive, easy-to-digest
-            analytics powered by your own words and moods.
+            {/* Understand yourself better with interactive, easy-to-digest
+            analytics powered by your own words and moods. */}
+            ClareAI turns your reflections into data-backed insights with
+            elegant charts and summaries you’ll actually want to read.
           </p>
           <ul className="space-y-3 text-base list-disc list-inside text-center md:text-left text-[var(--color-muted-foreground)]">
             <li>Colorful emotion charts and mood tracking</li>
