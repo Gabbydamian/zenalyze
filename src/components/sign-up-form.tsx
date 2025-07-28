@@ -1,23 +1,17 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/client";
+import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Flower } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import Image from "next/image";
+import { IconInnerShadowTop } from "@tabler/icons-react";
 
 export function SignUpForm({
   className,
@@ -73,7 +67,7 @@ export function SignUpForm({
                     className="flex items-center gap-2 font-head text-xl font-bold text-[var(--color-primary)] hover:text-[#f66774] transition-colors duration-300 ease-in-out"
                   >
                     <span className="flex items-center gap-2 text-2xl">
-                      <Flower className="w-6 h-6" /> ClareAi
+                      <IconInnerShadowTop className="w-6 h-6" /> ClareAi
                     </span>
                   </Link>
                 </div>
@@ -176,12 +170,12 @@ export function SignUpForm({
             </div>
           </div>
           <div className="bg-muted relative hidden md:block">
-            <img
+            <Image
               src="https://images.unsplash.com/photo-1499810631641-541e76d678a2?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
               alt="Analytics dashboard visualization"
               className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.5] dark:grayscale"
-              width={"auto"}
-              height={"auto"}
+              width={300}
+              height={300}
             />
             <div className="absolute inset-0 bg-gradient-to-r from-background/20 to-background/5" />
           </div>

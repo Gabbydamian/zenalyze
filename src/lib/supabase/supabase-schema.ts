@@ -82,8 +82,11 @@ export type Database = {
           entry_type: string | null
           id: string
           mood_score: number | null
+          processed: boolean | null
           raw_text: string | null
+          title: string | null
           transcript: string | null
+          updated_at: string | null
           user_id: string | null
         }
         Insert: {
@@ -93,8 +96,11 @@ export type Database = {
           entry_type?: string | null
           id?: string
           mood_score?: number | null
+          processed?: boolean | null
           raw_text?: string | null
+          title?: string | null
           transcript?: string | null
+          updated_at?: string | null
           user_id?: string | null
         }
         Update: {
@@ -104,8 +110,11 @@ export type Database = {
           entry_type?: string | null
           id?: string
           mood_score?: number | null
+          processed?: boolean | null
           raw_text?: string | null
+          title?: string | null
           transcript?: string | null
+          updated_at?: string | null
           user_id?: string | null
         }
         Relationships: [
@@ -129,6 +138,7 @@ export type Database = {
           id: string
           sentiment_score: number | null
           summary: string | null
+          updated_at: string | null
         }
         Insert: {
           action_items?: string[] | null
@@ -137,9 +147,10 @@ export type Database = {
           created_at?: string | null
           emotions?: Json | null
           entry_id?: string | null
-          id: string
+          id?: string
           sentiment_score?: number | null
           summary?: string | null
+          updated_at?: string | null
         }
         Update: {
           action_items?: string[] | null
@@ -151,12 +162,13 @@ export type Database = {
           id?: string
           sentiment_score?: number | null
           summary?: string | null
+          updated_at?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "insights_entry_id_fkey"
             columns: ["entry_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "entries"
             referencedColumns: ["id"]
           },
@@ -240,31 +252,37 @@ export type Database = {
       }
       users: {
         Row: {
+          avatar_url: string | null
           created_at: string | null
           email: string | null
+          full_name: string | null
           id: string
+          locale: string | null
           name: string | null
           subscription_tier: string | null
           theme: string | null
-          timezone: string | null
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string | null
           email?: string | null
+          full_name?: string | null
           id: string
+          locale?: string | null
           name?: string | null
           subscription_tier?: string | null
           theme?: string | null
-          timezone?: string | null
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string | null
           email?: string | null
+          full_name?: string | null
           id?: string
+          locale?: string | null
           name?: string | null
           subscription_tier?: string | null
           theme?: string | null
-          timezone?: string | null
         }
         Relationships: []
       }

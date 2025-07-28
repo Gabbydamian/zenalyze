@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
-import { Flower, Mail, Twitter, Linkedin, Github } from "lucide-react";
+import {  Mail, Twitter, Linkedin, Github } from "lucide-react";
+import { IconInnerShadowTop } from "@tabler/icons-react";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -16,7 +17,7 @@ export function Footer() {
               href="/"
               className="flex items-center gap-2 font-head text-xl font-bold text-[var(--color-primary)] hover:text-[#f66774] transition-colors duration-300 ease-in-out"
             >
-              <Flower className="w-6 h-6" />
+              <IconInnerShadowTop className="w-6 h-6" />
               ClareAi
             </Link>
             <p className="text-[var(--color-muted-foreground)] text-sm leading-relaxed">

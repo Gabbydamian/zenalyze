@@ -6,7 +6,7 @@ const testimonials = [
   {
     name: "Sarah K., Product Manager",
     quote:
-      "Clarifai helped me spot burnout before it hit me. Now I journal daily.",
+      "This has helped me spot burnout before it hit me. Now I journal daily.",
     avatar:
       "https://images.unsplash.com/photo-1511367461989-f85a21fda167?auto=format&fit=facearea&w=48&h=48&facepad=2&q=80",
   },

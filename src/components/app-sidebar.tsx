@@ -2,23 +2,18 @@
 
 import * as React from "react";
 import {
-  IconCamera,
-  IconChartBar,
-  IconDashboard,
-  // IconDatabase,
-  IconFileAi,
   IconFileDescription,
   IconFileWord,
-  // IconFolder,
+  IconMessages,
   IconHelp,
   IconInnerShadowTop,
-  // IconListDetails,
-  // IconReport,
-  IconSearch,
   IconSettings,
+  IconHomeSpark,
+  IconMoodCheck,
+  IconMicrophone,
+  IconSparkles,
 } from "@tabler/icons-react";
 
-// import { NavDocuments } from "@/components/nav-documents";
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
@@ -31,6 +26,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import Link from "next/link";
 
 const data = {
   user: {
@@ -39,11 +35,12 @@ const data = {
     avatar: "/avatars/shadcn.jpg",
   },
   navMain: [
-    { title: "Dashboard", url: "/dashboard", icon: IconDashboard },
+    { title: "Dashboard", url: "/dashboard", icon: IconHomeSpark },
+    { title: "Mood Check-In", url: "/mood", icon: IconMoodCheck },
     { title: "Journal", url: "/journal", icon: IconFileDescription },
-    { title: "Mood Check-In", url: "/mood", icon: IconChartBar },
-    { title: "Insights", url: "/insights", icon: IconFileAi },
-    { title: "Audio", url: "/audio", icon: IconCamera },
+    { title: "Audio", url: "/audio", icon: IconMicrophone },
+    { title: "Insights", url: "/insights", icon: IconSparkles },
+    { title: "Chat", url: "/chat", icon: IconMessages },
   ],
   // navClouds: [
   //   {
@@ -116,10 +113,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="#">
+              <Link href="/dashboard" className="flex items-center gap-2">
                 <IconInnerShadowTop className="!size-5" />
                 <span className="text-base font-semibold">ClareAi</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

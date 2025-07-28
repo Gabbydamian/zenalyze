@@ -37,6 +37,10 @@ export default async function JournalPage() {
                   <h1 className="text-3xl font-normal text-[var(--color-foreground)] mb-4">
                     Start Writing...
                   </h1>
+                  <span className="text-sm text-[var(--color-foreground-muted)] mb-4">
+                    Reflect on your week, jot down your thoughts, or just
+                    write freely. Your journal is a safe space for your thoughts.
+                    </span>
                   <HydrationBoundary state={dehydrate(queryClient)}>
                     <JournalEditor />
                   </HydrationBoundary>

@@ -1,10 +1,10 @@
 'use server';
 
-import { createClient } from '@/lib/server';
+import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 
 export async function signInWithGoogle() {
-    const supabase =  await createClient();
+    const supabase = await createClient();
 
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -27,7 +27,7 @@ export async function signInWithGoogle() {
 export async function signOut() {
     const supabase = await createClient();
     await supabase.auth.signOut();
-    redirect('/auth/login'); 
+    redirect('/auth/login');
 }
 
 export async function getUser() {

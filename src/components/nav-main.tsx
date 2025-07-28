@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { type Icon } from "@tabler/icons-react"
+import { type Icon } from "@tabler/icons-react";
 
 // import { Button } from "@/components/ui/button"
 import {
@@ -9,17 +9,17 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import Link from "next/link"
+} from "@/components/ui/sidebar";
+import Link from "next/link";
 
 export function NavMain({
   items,
 }: {
   items: {
-    title: string
-    url: string
-    icon?: Icon
-  }[]
+    title: string;
+    url: string;
+    icon?: Icon;
+  }[];
 }) {
   return (
     <SidebarGroup>
@@ -47,13 +47,16 @@ export function NavMain({
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton tooltip={item.title}>
-                {item.icon && <item.icon />}
-                <Link className="w-full" href={item.url}>{item.title}</Link>
+                <Link className="w-full flex gap-2" href={item.url}>
+                  {" "}
+                  {item.icon && <item.icon className="!size-5" />}
+                  {item.title}
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
-  )
+  );
 }

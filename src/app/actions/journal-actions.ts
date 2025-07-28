@@ -1,14 +1,12 @@
 "use server"
 
-import { createClient } from "@/lib/server"
+import { createClient } from "@/lib/supabase/server"
 import { JournalEntry, JournalEntryInsert, JournalEntryUpdate } from "@/types/entries";
 import { revalidatePath } from "next/cache";
 
-type ActionResult<T> = {
-    data?: T;
-    error?: string;
-    success: boolean;
-};
+export type ActionResult<T> =
+    | { success: true; data: T; error?: never }
+    | { success: false; data?: never; error: string };
 
 async function getCurrentUser() {
     const supabase = await createClient();
@@ -171,7 +169,10 @@ export async function updateJournalEntry(
         const user = await getCurrentUser();
         const supabase = await createClient();
 
+        const updatesWithTime = { ...updates, updated_at: new Date().toISOString() }
+
         // First check if the entry exists and belongs to the user
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { data: existingEntry, error: fetchError } = await supabase
             .from("entries")
             .select("id")
@@ -188,7 +189,7 @@ export async function updateJournalEntry(
 
         const { data, error } = await supabase
             .from("entries")
-            .update(updates)
+            .update(updatesWithTime)
             .eq("id", id)
             .eq("user_id", user.id)
             .select()
@@ -242,7 +243,8 @@ export async function deleteJournalEntry(id: string): Promise<ActionResult<void>
         revalidatePath('/dashboard');
 
         return {
-            success: true
+            success: true,
+            data: undefined
         };
 
     } catch (error) {

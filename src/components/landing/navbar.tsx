@@ -1,8 +1,8 @@
 "use client";
 import Link from "next/link";
-import { useTheme } from "@/components/theme-provider";
-import { Flower } from "lucide-react";
+import { useTheme } from "@/app/providers/theme-provider";
 import { useRef } from "react";
+import { IconInnerShadowTop } from "@tabler/icons-react";
 
 export function Navbar() {
   const { theme, toggleTheme } = useTheme();
@@ -68,7 +68,7 @@ export function Navbar() {
         >
           {/* You can replace this with an <Image> if you have a logo */}
           <span className="flex items-center gap-2">
-            <Flower className="w-6 h-6" /> ClareAi
+            <IconInnerShadowTop className="w-6 h-6" /> ClareAi
           </span>
         </Link>
         {/* Nav links */}

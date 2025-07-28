@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import { Barlow_Condensed } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from "@/app/providers/theme-provider";
 import { Toaster } from "sonner";
 import { QueryProvider } from "./providers/queryProvider";
 
@@ -35,7 +35,6 @@ export const metadata: Metadata = {
   ],
 };
 
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -44,6 +43,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <head>
+
         <meta
           property="og:title"
           content="ClareAi – AI Journaling, Mood Tracking & Emotion Analysis App"
@@ -75,6 +75,10 @@ export default function RootLayout({
           name="keywords"
           content="AI journaling app, mood tracking platform, emotion analysis tool, personal productivity AI, mental wellness tracker, daily check-in app, AI mental health assistant, voice journaling with transcription, insight-based journaling, self-awareness app"
         />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"></link>
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png"></link>
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"></link>
+        <link rel="manifest" href="/site.webmanifest"></link>
       </head>
       <body
         className={`
