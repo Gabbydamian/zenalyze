@@ -20,15 +20,16 @@ import { JournalEntry } from "@/types/entries";
 import {
   updateJournalEntry,
   getRecentEntries,
-} from "@/app/actions/journal-actions"; // Keep updateJournalEntry and getRecentEntries
-import { processAudioEntry } from "@/app/actions/audio"; // Import the new audio processing action
-import { summarizeAndTitleEntry } from "@/app/actions/insights"; // Still needed for manual transcript edits
+} from "@/app/actions/journal-actions";
+import { processAudioEntry } from "@/app/actions/audio";
+import { summarizeAndTitleEntry } from "@/app/actions/insights";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { convertToMp3 } from "@/lib/audioConverter"; // Import the audio converter
 
 type RecorderState = {
   isRecording: boolean;
   isPlaying: boolean;
-  isLoadingTranscription: boolean; // Indicates initial audio processing (upload, transcribe, first save)
+  isLoadingTranscription: boolean; // Indicates initial audio processing (conversion, upload, transcribe, first save)
   isSavingTranscript: boolean; // Indicates saving manual transcript edits
   audioUrl: string | null;
   currentEntryId: string | null;
@@ -77,7 +78,10 @@ export default function AudioJournalRecorder() {
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorderRef.current = new MediaRecorder(stream);
+      mediaRecorderRef.current = new MediaRecorder(stream, {
+        mimeType: "audio/webm",
+      }); // Explicitly set mimeType
+
       audioChunksRef.current = [];
 
       mediaRecorderRef.current.ondataavailable = (event) => {
@@ -95,7 +99,7 @@ export default function AudioJournalRecorder() {
           hasAudioContent: true,
           isRecording: false,
         }));
-        // Trigger the comprehensive audio processing action
+        // Trigger the comprehensive audio processing action including conversion
         handleProcessAudio(audioBlob);
       };
 
@@ -131,7 +135,7 @@ export default function AudioJournalRecorder() {
           .getTracks()
           .forEach((track) => track.stop());
       }
-      toast.success("Recording stopped. Processing audio...", {
+      toast.success("Recording stopped. Preparing for processing...", {
         duration: 1500,
       });
     }
@@ -177,31 +181,31 @@ export default function AudioJournalRecorder() {
     }
   };
 
-  // This function now calls the single backend action `processAudioEntry`
+  // This function now handles client-side conversion and then calls the backend action
   const handleProcessAudio = useCallback(
     async (audioBlobOrFile: Blob | File) => {
-      // Set both flags to show full processing is underway
       setRecorderState((prev) => ({
         ...prev,
         isLoadingTranscription: true,
-        isSavingTranscript: true,
+        isSavingTranscript: true, // Also set saving since it's part of the initial save
       }));
-      toast.loading("Uploading, transcribing, and saving audio entry...", {
-        id: "audio-process-toast",
-        duration: 0,
-      });
+      toast.loading(
+        "Converting audio, uploading, transcribing, and saving entry...",
+        {
+          id: "audio-process-toast",
+          duration: 0,
+        }
+      );
 
       try {
-        const fileToUpload =
-          audioBlobOrFile instanceof File
-            ? audioBlobOrFile
-            : new File([audioBlobOrFile], `audio_${Date.now()}.webm`, {
-                type: audioBlobOrFile.type,
-              });
+        // Step 1: Convert to MP3 using FFmpeg on the client side
+        console.log("Starting client-side audio conversion to MP3...");
+        const mp3File = await convertToMp3(audioBlobOrFile);
+        console.log("Audio converted to MP3:", mp3File);
 
-        // Call the unified action
+        // Step 2: Call the unified server action with the converted MP3 file
         const result = await processAudioEntry(
-          fileToUpload,
+          mp3File, // Pass the converted MP3 file
           recorderState.currentEntryId
         );
 
@@ -227,7 +231,7 @@ export default function AudioJournalRecorder() {
           throw new Error(result.error || "Failed to process audio entry.");
         }
       } catch (error: any) {
-        console.error("Error processing audio:", error);
+        console.error("Error processing audio (client or server step):", error);
         setRecorderState((prev) => ({
           ...prev,
           isLoadingTranscription: false,
@@ -237,19 +241,24 @@ export default function AudioJournalRecorder() {
           id: "audio-process-toast",
           duration: 5000,
         });
+      } finally {
+        // Revoke the temporary URL created for the initial blob/file if it exists
+        if (audioBlobOrFile instanceof Blob && recorderState.audioUrl) {
+          URL.revokeObjectURL(recorderState.audioUrl);
+        }
       }
     },
-    [recorderState.currentEntryId, queryClient]
+    [recorderState.currentEntryId, queryClient, recorderState.audioUrl] // Add recorderState.audioUrl to dependencies for cleanup
   );
 
   // This function is now specifically for saving manual edits to the transcript
   const handleSaveTranscriptChanges = useCallback(async () => {
     if (!recorderState.currentEntryId || !recorderState.transcript) {
-      toast.error("No entry loaded or transcript to save.");
+      toast.error("No entry loaded or transcript to save.", { duration: 2000 });
       return;
     }
 
-    if (recorderState.isSavingTranscript) return;
+    if (recorderState.isSavingTranscript) return; // Prevent double saving
 
     // Check if there are actual changes
     if (
@@ -286,7 +295,8 @@ export default function AudioJournalRecorder() {
         });
 
         // Re-run AI insights if transcript changed and is long enough
-        if (recorderState.transcript.length > 100) {
+        if (recorderState.transcript.length > 20) {
+          // Reduced threshold for AI re-run
           toast.loading("Updating AI insights...", {
             id: "ai-audio-toast",
             duration: 0,
@@ -320,21 +330,34 @@ export default function AudioJournalRecorder() {
     }
   }, [recorderState, queryClient]);
 
+  // Helper to check for unsaved changes
+  const hasUnsavedChanges = useCallback(() => {
+    return (
+      recorderState.transcript.trim() !==
+        recorderState.lastSavedTranscript.trim() &&
+      recorderState.transcript.trim().length > 0 &&
+      recorderState.currentEntryId !== null
+    );
+  }, [
+    recorderState.transcript,
+    recorderState.lastSavedTranscript,
+    recorderState.currentEntryId,
+  ]);
+
   const handleLoadAudioEntry = useCallback(
     async (entry: JournalEntry) => {
-      // If there are unsaved changes on the *current* entry, offer to save them
-      const hasUnsavedChanges =
-        recorderState.transcript.trim() !==
-          recorderState.lastSavedTranscript.trim() &&
-        recorderState.transcript.trim().length > 0 &&
-        recorderState.currentEntryId !== null; // Only prompt if an entry is actually loaded
-
+      // If there are unsaved changes on the *current* entry, prompt to save them
       if (
-        hasUnsavedChanges &&
+        hasUnsavedChanges() &&
         !recorderState.isSavingTranscript &&
         !recorderState.isLoadingTranscription
       ) {
-        await handleSaveTranscriptChanges(); // Auto-save current changes
+        const confirmSave = window.confirm(
+          "You have unsaved changes in the current entry. Do you want to save them before loading a new entry?"
+        );
+        if (confirmSave) {
+          await handleSaveTranscriptChanges();
+        }
       }
 
       // Stop any ongoing recording or playback
@@ -374,23 +397,22 @@ export default function AudioJournalRecorder() {
         duration: 2000,
       });
     },
-    [recorderState, handleSaveTranscriptChanges] // Dependency on handleSaveTranscriptChanges
+    [recorderState, handleSaveTranscriptChanges, hasUnsavedChanges]
   );
 
-  const handleNewAudioEntry = useCallback(() => {
-    // If there are unsaved changes on the *current* entry, offer to save them first
-    const hasUnsavedChanges =
-      recorderState.transcript.trim() !==
-        recorderState.lastSavedTranscript.trim() &&
-      recorderState.transcript.trim().length > 0 &&
-      recorderState.currentEntryId !== null;
-
+  const handleNewAudioEntry = useCallback(async () => {
+    // If there are unsaved changes on the *current* entry, prompt to save them first
     if (
-      hasUnsavedChanges &&
+      hasUnsavedChanges() &&
       !recorderState.isSavingTranscript &&
       !recorderState.isLoadingTranscription
     ) {
-      handleSaveTranscriptChanges(); // Auto-save current changes before starting new
+      const confirmSave = window.confirm(
+        "You have unsaved changes in the current entry. Do you want to save them before starting a new one?"
+      );
+      if (confirmSave) {
+        await handleSaveTranscriptChanges();
+      }
     }
 
     // Reset state for a new recording/upload
@@ -426,7 +448,7 @@ export default function AudioJournalRecorder() {
       hasAudioContent: false,
     });
     toast.info("Ready for a new audio entry.", { duration: 2000 });
-  }, [recorderState, handleSaveTranscriptChanges]);
+  }, [recorderState, handleSaveTranscriptChanges, hasUnsavedChanges]);
 
   const handleTranscriptChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -441,13 +463,14 @@ export default function AudioJournalRecorder() {
         clearTimeout(transcriptTypingTimeoutRef.current);
       }
       transcriptTypingTimeoutRef.current = setTimeout(() => {
+        // Only trigger auto-save if there are actual changes AND an entry is loaded
         if (
           newTranscript.trim() !== recorderState.lastSavedTranscript.trim() &&
           recorderState.currentEntryId
         ) {
           handleSaveTranscriptChanges(); // Call manual save for edits
         }
-      }, 3000);
+      }, 3000); // 3-second debounce
     },
     [
       recorderState.lastSavedTranscript,
@@ -488,40 +511,28 @@ export default function AudioJournalRecorder() {
   }, [recorderState.audioUrl]);
 
   useEffect(() => {
-    const handleBeforeUnload = async (e: BeforeUnloadEvent) => {
-      const hasUnsavedChanges =
-        recorderState.transcript.trim() !==
-          recorderState.lastSavedTranscript.trim() &&
-        recorderState.transcript.trim().length > 0 &&
-        recorderState.currentEntryId !== null; // Only if an entry is loaded/being edited
-
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (
-        hasUnsavedChanges &&
+        hasUnsavedChanges() &&
         !recorderState.isSavingTranscript &&
         !recorderState.isLoadingTranscription
       ) {
         e.preventDefault();
         e.returnValue =
           "You have unsaved changes. Are you sure you want to leave?";
+        return "You have unsaved changes. Are you sure you want to leave?"; // For older browsers
       }
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [
-    recorderState.transcript,
-    recorderState.lastSavedTranscript,
+    hasUnsavedChanges,
     recorderState.isSavingTranscript,
     recorderState.isLoadingTranscription,
-    recorderState.currentEntryId,
   ]);
 
   if (!mounted) return null;
-
-  const hasUnsavedTranscriptChanges =
-    recorderState.transcript.trim() !==
-      recorderState.lastSavedTranscript.trim() &&
-    recorderState.currentEntryId !== null; // Only show if an entry is loaded
 
   // Determine overall loading/saving state
   const isBusy =
@@ -539,7 +550,7 @@ export default function AudioJournalRecorder() {
               className={`px-2 py-1 rounded-full text-xs font-medium ${
                 isBusy
                   ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
-                  : hasUnsavedTranscriptChanges
+                  : hasUnsavedChanges()
                   ? "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300"
                   : recorderState.currentEntryId // Only show saved if an entry exists
                   ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
@@ -550,7 +561,7 @@ export default function AudioJournalRecorder() {
                 ? "Processing Audio..."
                 : recorderState.isSavingTranscript
                 ? "Saving Transcript..."
-                : hasUnsavedTranscriptChanges
+                : hasUnsavedChanges()
                 ? "Unsaved Transcript"
                 : recorderState.currentEntryId
                 ? "Saved"
@@ -570,7 +581,7 @@ export default function AudioJournalRecorder() {
         <Button
           onClick={handleNewAudioEntry}
           className="flex items-center gap-2"
-          disabled={isBusy}
+          disabled={isBusy || recorderState.isRecording}
         >
           <Plus className="w-4 h-4" />
           New Audio Entry
@@ -590,7 +601,7 @@ export default function AudioJournalRecorder() {
           <Button
             onClick={stopRecording}
             className="flex items-center gap-2 bg-zinc-700 hover:bg-zinc-800 text-white"
-            disabled={recorderState.isLoadingTranscription} // Cannot stop if already processing
+            disabled={isBusy} // Disable if already processing after recording stops
           >
             <StopCircle className="w-4 h-4" /> Stop
           </Button>
@@ -673,7 +684,7 @@ export default function AudioJournalRecorder() {
           disabled={
             !recorderState.currentEntryId || // No entry loaded to save for
             isBusy ||
-            !hasUnsavedTranscriptChanges // Only enable if there are changes
+            !hasUnsavedChanges() // Only enable if there are changes
           }
           className="flex items-center gap-2"
           title="Save Transcript Changes"

@@ -1,18 +1,39 @@
-import { AppSidebar } from "@/components/app-sidebar"
-import { ChartAreaInteractive } from "@/components/chart-area-interactive"
-import { DataTable } from "@/components/data-table"
-import { SectionCards } from "@/components/section-cards"
-import { SiteHeader } from "@/components/site-header"
+import { AppSidebar } from "@/components/app-sidebar";
+import { ChartAreaInteractive } from "@/components/chart-area-interactive";
+import { DataTable } from "@/components/data-table";
+import { SectionCards } from "@/components/section-cards";
+import { SiteHeader } from "@/components/site-header";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+
+import data from "./data.json";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar"
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  IconFileDescription,
+  IconMoodCheck,
+  IconSparkles,
+} from "@tabler/icons-react";
 
-import data from "./data.json"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import { getJournalEntries } from "@/app/actions/journal-actions";
+import {
+  QueryClient,
+  dehydrate,
+  HydrationBoundary,
+} from "@tanstack/react-query";
+import JournalEditor from "@/components/JournalEditor";
 
-export default function Page() {
+export default async function Page() {
+  const queryClient = new QueryClient();
+
+  await queryClient.prefetchQuery({
+    queryKey: ["entries"],
+    queryFn: () => getJournalEntries(),
+  });
   return (
     <SidebarProvider
       style={
@@ -35,20 +56,60 @@ export default function Page() {
                     You&apos;ve been feeling calm but tired lately. Want to
                     reflect?
                   </p>
-                  <Button className="bg-[var(--color-chart-2)] w-fit mt-4 p-0 ">
-                    <Link
-                      href="/journal"
-                      className="text-white link-remove p-6"
-                    >
-                      Start Reflecting
-                    </Link>
-                  </Button>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button className="bg-[var(--color-chart-2)] w-fit mt-4 px-6 py-4 ">
+                        Start Reflecting
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80">
+                      <p className="text-sm text-muted-foreground">
+                        Reflect on your week with a journal entry, mood tracker,
+                        or audio note. Choose one of the options below to get
+                        started.
+                      </p>
+                      <div
+                        id="reflect-options"
+                        className="flex flex-col mt-4 gap-2"
+                      >
+                        <Button variant="outline" className="mr-2">
+                          <Link
+                            href="/journal"
+                            className="flex items-center w-full justify-center"
+                          >
+                            <IconFileDescription className="mr-1" />
+                            Journal
+                          </Link>
+                        </Button>
+                        <Button variant="outline" className="mr-2">
+                          <Link
+                            href="/mood"
+                            className="flex items-center w-full justify-center"
+                          >
+                            <IconMoodCheck className="mr-1" />
+                            Mood Tracker
+                          </Link>
+                        </Button>
+                        <Button variant="outline" className="mr-2">
+                          <Link
+                            href="/audio"
+                            className="flex items-center w-full justify-center"
+                          >
+                            <IconSparkles className="mr-1" />
+                            Audio
+                          </Link>
+                        </Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <SectionCards />
                 <div className="px-4 lg:px-6">
                   <ChartAreaInteractive />
                 </div>
-                <DataTable data={data} />
+                <HydrationBoundary state={dehydrate(queryClient)}>
+                  <DataTable data={data} />
+                </HydrationBoundary>
               </div>
             </div>
           </div>
