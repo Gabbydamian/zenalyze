@@ -1,5 +1,5 @@
 import { AppSidebar } from "@/components/app-sidebar";
-import AudioJournalRecorder from "@/components/AudioJournalRecorder"; // Import the Audio component
+import AudioJournalRecorder from "@/components/AudioJournalRecorder"; 
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import {
@@ -7,12 +7,11 @@ import {
   dehydrate,
   HydrationBoundary,
 } from "@tanstack/react-query";
-import { getRecentEntries } from "../actions/journal-actions"; // Still use this to prefetch for the AudioJournalRecorder
+import { getRecentEntries } from "../actions/journal-actions"; 
 
 export default async function AudioPage() {
   const queryClient = new QueryClient();
 
-  // Prefetch entries, which will be filtered by type 'voice' in the AudioJournalRecorder component
   await queryClient.prefetchQuery({
     queryKey: ["entries"],
     queryFn: () => getRecentEntries(),

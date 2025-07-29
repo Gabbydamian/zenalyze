@@ -25,7 +25,6 @@ import {
   dehydrate,
   HydrationBoundary,
 } from "@tanstack/react-query";
-import JournalEditor from "@/components/JournalEditor";
 
 export default async function Page() {
   const queryClient = new QueryClient();

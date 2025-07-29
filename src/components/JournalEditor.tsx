@@ -1,3 +1,5 @@
+// src/components/JournalEditor.tsx
+
 "use client";
 
 import { useEditor, EditorContent } from "@tiptap/react";
@@ -103,11 +105,12 @@ export default function JournalEditor() {
           // Create new entry
           const result = await createJournalEntry({
             raw_text: text,
-            transcript: text,
+            transcript: text, // For text entries, transcript is same as raw_text
             audio_url: null,
             category_ids: [],
             mood_score: null,
             entry_type: "text",
+            processed: false, // Initial state for new text entry
           });
 
           if (result.success && result.data?.id) {
@@ -129,7 +132,7 @@ export default function JournalEditor() {
           // Update existing entry
           const result = await updateJournalEntry(editorState.entryId, {
             raw_text: text,
-            transcript: text,
+            transcript: text, // For text entries, transcript is same as raw_text
           });
 
           if (result.success) {
@@ -182,10 +185,10 @@ export default function JournalEditor() {
       clearTimeout(typingTimeoutRef.current);
     }
 
-    // Save the entry first
+    // Save the entry first (this will update lastSavedText and isSaving state)
     await handleAutoSave(text);
 
-    // Then summarize and title if we have an entry ID and sufficient content
+    // After auto-save, check if an entryId exists and if content is sufficient for AI
     if (editorState.entryId && text.length > 100) {
       // Show a toast that AI processing is starting
       const processingToast = toast.loading("Generating title and summary...", {
@@ -216,7 +219,28 @@ export default function JournalEditor() {
           });
         }
 
-        // Refetch to update the UI with new title
+        // --- IMPORTANT ADDITION: Mark entry as processed after AI insights ---
+        // This ensures consistency with audio entries.
+        if (result.titleSuccess || result.summarySuccess) {
+          // Only mark processed if AI insights were at least partially successful
+          const updateProcessedResult = await updateJournalEntry(
+            editorState.entryId,
+            {
+              processed: true,
+            }
+          );
+          if (!updateProcessedResult.success) {
+            console.error(
+              "Failed to mark text entry as processed:",
+              updateProcessedResult.error
+            );
+            toast.error("Failed to mark entry as processed in DB.", {
+              duration: 2000,
+            });
+          }
+        }
+
+        // Refetch to update the UI with new title and potentially processed status
         await refetch();
       } catch (error) {
         // Dismiss the loading toast
@@ -227,12 +251,36 @@ export default function JournalEditor() {
           description: "AI processing encountered an error.",
           duration: 3000,
         });
+        // Even if AI fails, the entry is still saved, so we might still want to mark it processed
+        // depending on what 'processed' truly means. For now, we only mark if AI was successful.
       }
+    } else if (editorState.entryId) {
+      // If content is too short for AI, but entry is saved, still mark it processed if it's new
+      // Or if it's an existing entry and not yet processed, and not currently being processed by AI
+      // This ensures that even short text entries get marked as processed if they're "finalized" by a manual save.
+      // You might want to refine this logic based on your exact definition of 'processed'.
+      const updateProcessedResult = await updateJournalEntry(
+        editorState.entryId,
+        {
+          processed: true,
+        }
+      );
+      if (!updateProcessedResult.success) {
+        console.error(
+          "Failed to mark text entry as processed (short content):",
+          updateProcessedResult.error
+        );
+        toast.error("Failed to mark entry as processed in DB.", {
+          duration: 2000,
+        });
+      }
+      await refetch(); // Refetch to update UI with processed status
     }
   }, [
     editor,
     editorState.lastSavedText,
     editorState.entryId,
+    editorState.isSaving, // Added isSaving to dependencies
     handleAutoSave,
     refetch,
   ]);
@@ -531,10 +579,12 @@ export default function JournalEditor() {
                             hour: "2-digit",
                             minute: "2-digit",
                           })
-                        : entry.created_at ? new Date(entry.created_at).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit"}) : "Unknown time"
-                        }
+                        : entry.created_at
+                        ? new Date(entry.created_at).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "Unknown time"}
                     </span>
                   </div>
                   <p className="text-sm text-zinc-600 dark:text-zinc-300 line-clamp-2">

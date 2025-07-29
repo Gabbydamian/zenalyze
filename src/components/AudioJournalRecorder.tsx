@@ -24,13 +24,13 @@ import {
 import { processAudioEntry } from "@/app/actions/audio";
 import { summarizeAndTitleEntry } from "@/app/actions/insights";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { convertToMp3 } from "@/lib/audioConverter"; // Import the audio converter
+// REMOVE THIS LINE: import { convertToMp3 } from "@/lib/audioConverter";
 
 type RecorderState = {
   isRecording: boolean;
   isPlaying: boolean;
-  isLoadingTranscription: boolean; // Indicates initial audio processing (conversion, upload, transcribe, first save)
-  isSavingTranscript: boolean; // Indicates saving manual transcript edits
+  isLoadingTranscription: boolean;
+  isSavingTranscript: boolean;
   audioUrl: string | null;
   currentEntryId: string | null;
   transcript: string;
@@ -77,10 +77,11 @@ export default function AudioJournalRecorder() {
 
   const startRecording = async () => {
     try {
+      // Use 'audio/webm' as it's widely supported and efficient
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorderRef.current = new MediaRecorder(stream, {
         mimeType: "audio/webm",
-      }); // Explicitly set mimeType
+      });
 
       audioChunksRef.current = [];
 
@@ -90,7 +91,7 @@ export default function AudioJournalRecorder() {
 
       mediaRecorderRef.current.onstop = () => {
         const audioBlob = new Blob(audioChunksRef.current, {
-          type: "audio/webm",
+          type: "audio/webm", // Ensure the type matches what was recorded
         });
         const url = URL.createObjectURL(audioBlob); // Create a temporary URL for immediate playback
         setRecorderState((prev) => ({
@@ -99,8 +100,16 @@ export default function AudioJournalRecorder() {
           hasAudioContent: true,
           isRecording: false,
         }));
-        // Trigger the comprehensive audio processing action including conversion
-        handleProcessAudio(audioBlob);
+        // --- IMPORTANT CHANGE HERE: Convert Blob to File before processing ---
+        const recordedFile = new File(
+          [audioBlob],
+          `recorded_audio_${Date.now()}.webm`,
+          {
+            type: audioBlob.type,
+            lastModified: Date.now(),
+          }
+        );
+        handleProcessAudio(recordedFile); // Pass the File object
       };
 
       mediaRecorderRef.current.start();
@@ -174,23 +183,24 @@ export default function AudioJournalRecorder() {
         lastSaveTime: null,
       }));
       toast.info("Audio file loaded. Processing...", { duration: 2000 });
-      // Trigger the comprehensive audio processing action
-      handleProcessAudio(file);
+      // Trigger the comprehensive audio processing action directly with the File
+      handleProcessAudio(file); // file is already a File object
     } else {
       toast.error("Please select a valid audio file.", { duration: 3000 });
     }
   };
 
-  // This function now handles client-side conversion and then calls the backend action
+  // This function now directly calls the backend action without client-side conversion
   const handleProcessAudio = useCallback(
-    async (audioBlobOrFile: Blob | File) => {
+    async (audioFile: File) => {
+      // Changed type hint to File
       setRecorderState((prev) => ({
         ...prev,
         isLoadingTranscription: true,
         isSavingTranscript: true, // Also set saving since it's part of the initial save
       }));
       toast.loading(
-        "Converting audio, uploading, transcribing, and saving entry...",
+        "Uploading, transcribing, and saving entry...", // Updated toast message
         {
           id: "audio-process-toast",
           duration: 0,
@@ -198,14 +208,9 @@ export default function AudioJournalRecorder() {
       );
 
       try {
-        // Step 1: Convert to MP3 using FFmpeg on the client side
-        console.log("Starting client-side audio conversion to MP3...");
-        const mp3File = await convertToMp3(audioBlobOrFile);
-        console.log("Audio converted to MP3:", mp3File);
-
-        // Step 2: Call the unified server action with the converted MP3 file
+        // Directly call the unified server action with the audio File
         const result = await processAudioEntry(
-          mp3File, // Pass the converted MP3 file
+          audioFile, // Pass the File object directly
           recorderState.currentEntryId
         );
 
@@ -243,12 +248,16 @@ export default function AudioJournalRecorder() {
         });
       } finally {
         // Revoke the temporary URL created for the initial blob/file if it exists
-        if (audioBlobOrFile instanceof Blob && recorderState.audioUrl) {
+        // Note: audioFile is now always a File, so we check if its URL was created
+        if (
+          recorderState.audioUrl &&
+          recorderState.audioUrl.startsWith("blob:")
+        ) {
           URL.revokeObjectURL(recorderState.audioUrl);
         }
       }
     },
-    [recorderState.currentEntryId, queryClient, recorderState.audioUrl] // Add recorderState.audioUrl to dependencies for cleanup
+    [recorderState.currentEntryId, queryClient, recorderState.audioUrl]
   );
 
   // This function is now specifically for saving manual edits to the transcript
@@ -366,6 +375,11 @@ export default function AudioJournalRecorder() {
         mediaRecorderRef.current.state !== "inactive"
       ) {
         mediaRecorderRef.current.stop();
+        if (mediaRecorderRef.current.stream) {
+          mediaRecorderRef.current.stream
+            .getTracks()
+            .forEach((track) => track.stop());
+        }
       }
       if (audioPlayerRef.current) {
         audioPlayerRef.current.pause();
@@ -498,7 +512,11 @@ export default function AudioJournalRecorder() {
             .forEach((track) => track.stop());
         }
       }
-      if (recorderState.audioUrl) {
+      if (
+        recorderState.audioUrl &&
+        recorderState.audioUrl.startsWith("blob:")
+      ) {
+        // Only revoke blob URLs
         URL.revokeObjectURL(recorderState.audioUrl); // Clean up temporary URL
       }
       if (audioPlayerRef.current) {
