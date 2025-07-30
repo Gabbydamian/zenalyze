@@ -1,13 +1,10 @@
-import { AppSidebar } from "@/components/app-sidebar";
-import AudioJournalRecorder from "@/components/AudioJournalRecorder"; 
-import { SiteHeader } from "@/components/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import AudioJournalRecorder from "@/components/AudioJournalRecorder";
 import {
   QueryClient,
   dehydrate,
   HydrationBoundary,
 } from "@tanstack/react-query";
-import { getRecentEntries } from "../actions/journal-actions"; 
+import { getRecentEntries } from "../../actions/journal-actions";
 
 export default async function AudioPage() {
   const queryClient = new QueryClient();
@@ -18,18 +15,7 @@ export default async function AudioPage() {
   });
 
   return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
-    >
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader />
-        <div className="flex flex-1 flex-col">
+
           <div className="flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
               <div className="container mx-auto flex flex-col gap-8">
@@ -48,8 +34,5 @@ export default async function AudioPage() {
               </div>
             </div>
           </div>
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
   );
 }
