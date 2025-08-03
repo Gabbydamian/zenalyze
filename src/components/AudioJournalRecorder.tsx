@@ -77,6 +77,23 @@ export default function AudioJournalRecorder() {
 
   const startRecording = async () => {
     try {
+      // Add a preliminary check or a small UI hint here
+      if (
+        typeof navigator === "undefined" ||
+        !navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia
+      ) {
+        toast.error("Your browser does not support microphone access.", {
+          duration: 4000,
+        });
+        return;
+      }
+
+      // Perhaps a confirm dialog or a visible message before the actual prompt
+      toast.info(
+        "Preparing to record. A browser permission request for your microphone will appear.",
+        { duration: 3000 }
+      );
       // Use 'audio/webm' as it's widely supported and efficient
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorderRef.current = new MediaRecorder(stream, {
@@ -127,9 +144,32 @@ export default function AudioJournalRecorder() {
       toast.info("Recording started...", { duration: 1500 });
     } catch (err) {
       console.error("Error accessing microphone:", err);
-      toast.error("Could not access microphone. Please allow access.", {
-        duration: 4000,
-      });
+      if (err instanceof DOMException) {
+        if (
+          err.name === "NotAllowedError" ||
+          err.name === "PermissionDeniedError"
+        ) {
+          toast.error(
+            "Microphone access denied. Please go to your iPhone's Settings > Safari > Microphone & Camera Access and enable it for this website.",
+            { duration: 8000 }
+          );
+        } else if (err.name === "NotFoundError") {
+          toast.error("No microphone found on your device.", {
+            duration: 4000,
+          });
+        } else {
+          toast.error(`Could not access microphone: ${err.message}`, {
+            duration: 5000,
+          });
+        }
+      } else {
+        toast.error(
+          "An unknown error occurred while trying to access the microphone.",
+          {
+            duration: 5000,
+          }
+        );
+      }
     }
   };
 

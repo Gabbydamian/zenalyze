@@ -5,6 +5,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { JournalEntry } from "@/types/entries";
 import { summarizeAndTitleEntry } from "@/app/actions/insights";
+import pRetry from 'p-retry'; // Import p-retry
 import Groq from "groq-sdk"; // Import the Groq SDK
 
 // Initialize Groq SDK with your API key
@@ -92,7 +93,7 @@ async function upsertAudioEntry(
  * @returns An object indicating success/failure and relevant data.
  */
 export async function processAudioEntry(
-  audioFile: File, // This is the File object received from the client-side form submission
+  audioFile: File,
   existingEntryId: string | null = null
 ): Promise<{
   success: boolean;
@@ -111,35 +112,74 @@ export async function processAudioEntry(
     return { success: false, error: "User not authenticated." };
   }
 
-  // Determine file extension safely
   const fileExt = audioFile.name.split(".").pop();
-  const safeFileExt = fileExt ? fileExt.toLowerCase() : "webm"; // Default to 'webm' as MediaRecorder often outputs this
-  const filePath = `${user.id}/${Date.now()}.${safeFileExt}`; // Unique path for storage
+  const safeFileExt = fileExt ? fileExt.toLowerCase() : "webm";
+  const filePath = `${user.id}/${Date.now()}.${safeFileExt}`;
 
-  let audioUrl: string | undefined; // This will now store the *public* URL, not the signed one
+  let audioUrl: string | undefined;
   let transcript: string | undefined;
   let createdOrUpdatedEntry: JournalEntry | undefined;
 
   try {
-    // Step 1: Upload to Supabase Storage
-    console.log("processAudioEntry: Starting Supabase audio upload...");
-    const { error: uploadError } = await supabase.storage
-      .from("audio-entries")
-      .upload(filePath, audioFile, {
-        // Upload the original audioFile
-        cacheControl: "3600", // Cache for 1 hour
-        upsert: false, // Do not overwrite if file exists (though timestamp makes it unique)
-      });
+    // Step 1: Upload to Supabase Storage with retry logic
+    console.log(
+      "processAudioEntry: Starting Supabase audio upload (with retries)..."
+    );
 
-    if (uploadError) {
-      console.error("processAudioEntry: Audio upload error:", uploadError);
-      return { success: false, error: `Upload error: ${uploadError.message}` };
+    // Define the upload function to be retried
+    const uploadAttempt = async (attempt: number) => {
+      if (attempt > 1) {
+        console.warn(
+          `Attempt ${attempt}: Retrying Supabase audio upload for ${filePath}...`
+        );
+      }
+      const { error: uploadError } = await supabase.storage
+        .from("audio-entries")
+        .upload(filePath, audioFile, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+
+      if (uploadError) {
+        // Log specific error details from Supabase Storage
+        console.error(
+          `Upload attempt ${attempt} failed for ${filePath}:`,
+          uploadError.message
+        );
+        // Throw the error to trigger a retry
+        throw new Error(`Supabase upload failed: ${uploadError.message}`);
+      }
+      return { success: true };
+    };
+
+    const result = await pRetry(uploadAttempt, {
+      retries: 5, // Try 5 times (initial attempt + 4 retries)
+      minTimeout: 1000, // 1 second
+      maxTimeout: 10000, // 10 seconds
+      onFailedAttempt: (error) => {
+        console.warn(
+          `Attempt ${error.attemptNumber} failed. There are ${error.retriesLeft} retries left.`
+        );
+        console.error(error.message); // Log the specific error for each failed attempt
+      },
+    });
+
+    if (!result.success) {
+      // This path should ideally not be reached if pRetry re-throws on final failure
+      console.error(
+        "processAudioEntry: Audio upload failed after all retries."
+      );
+      return {
+        success: false,
+        error: "Audio upload failed after multiple attempts.",
+      };
     }
-    console.log("processAudioEntry: Audio uploaded to Supabase storage.");
+    console.log(
+      "processAudioEntry: Audio uploaded to Supabase storage successfully after retries."
+    );
 
-    // Get the *public* URL for storage in the database (for client-side playback later)
-    // This URL won't work for direct server-side fetch if bucket is private,
-    // but it's what you'll store for authenticated client access.
+    // Rest of your function remains largely the same
+    // Get the *public* URL
     const { data: publicUrlData } = supabase.storage
       .from("audio-entries")
       .getPublicUrl(filePath);
@@ -156,14 +196,14 @@ export async function processAudioEntry(
       audioUrl
     );
 
-    // --- IMPORTANT CHANGE: Generate a signed URL for server-side fetching ---
+    // Generate a signed URL for server-side fetching
     console.log(
       "processAudioEntry: Generating signed URL for server-side fetch..."
     );
     const { data: signedUrlData, error: signedUrlError } =
       await supabase.storage
         .from("audio-entries")
-        .createSignedUrl(filePath, 100); // URL valid for 100 seconds (adjust as needed)
+        .createSignedUrl(filePath, 100);
 
     if (signedUrlError) {
       console.error(
@@ -178,11 +218,11 @@ export async function processAudioEntry(
     const signedAudioUrl = signedUrlData.signedUrl;
     console.log("processAudioEntry: Signed URL generated.");
 
-    // Step 2: Fetch audio from SIGNED URL and Transcribe with Groq Whisper
+    // Fetch audio from SIGNED URL and Transcribe with Groq Whisper
     console.log(
       "processAudioEntry: Fetching audio from SIGNED URL for transcription..."
     );
-    const audioResponse = await fetch(signedAudioUrl); // Use the signed URL here
+    const audioResponse = await fetch(signedAudioUrl);
     if (!audioResponse.ok) {
       const errorText = await audioResponse.text();
       console.error(
@@ -195,7 +235,6 @@ export async function processAudioEntry(
     console.log(
       "processAudioEntry: Audio fetched successfully. Converting to Blob..."
     );
-    // Get the audio content as a Blob
     const audioBlobFromUrl = await audioResponse.blob();
     console.log(
       "processAudioEntry: Audio Blob created. Size:",
@@ -204,13 +243,10 @@ export async function processAudioEntry(
       audioBlobFromUrl.type
     );
 
-    // Convert the Blob to a File object, as Groq SDK's Uploadable type
-    // expects properties like 'name' and 'lastModified' which are present on File.
-    // Use the original file's name or a generated one, and its type.
     const fileToTranscribe = new File(
       [audioBlobFromUrl],
-      audioFile.name || `transcribe-${Date.now()}.${safeFileExt}`, // Use original name or generated
-      { type: audioBlobFromUrl.type, lastModified: Date.now() } // Add type and lastModified
+      audioFile.name || `transcribe-${Date.now()}.${safeFileExt}`,
+      { type: audioBlobFromUrl.type, lastModified: Date.now() }
     );
     console.log(
       "processAudioEntry: File object created for Groq transcription."
@@ -218,10 +254,10 @@ export async function processAudioEntry(
 
     console.log("processAudioEntry: Starting Groq transcription...");
     const transcription = await groq.audio.transcriptions.create({
-      file: fileToTranscribe, // Pass the created File object to Groq
-      model: "whisper-large-v3", // Specify the Groq Whisper model
-      language: "en", // Set the language
-      response_format: "verbose_json", // Request verbose JSON to get the 'text' property
+      file: fileToTranscribe,
+      model: "whisper-large-v3",
+      language: "en",
+      response_format: "verbose_json",
     });
 
     if (!transcription.text) {
@@ -236,14 +272,14 @@ export async function processAudioEntry(
       transcript.length
     );
 
-    // Step 3: Upsert entry into Supabase database
+    // Upsert entry into Supabase database
     console.log("processAudioEntry: Starting Supabase entry upsert...");
     const upsertResult = await upsertAudioEntry(
       user.id,
       existingEntryId,
       audioUrl,
       transcript
-    ); // Use the *public* audioUrl for DB storage
+    );
     if (!upsertResult.success || !upsertResult.data) {
       console.error(
         "processAudioEntry: Supabase upsert failed:",
@@ -260,14 +296,12 @@ export async function processAudioEntry(
       createdOrUpdatedEntry.id
     );
 
-    // ✅ Step 4: Immediately generate AI summary and title
-    // Only attempt if a valid transcript is available and is long enough
+    // Immediately generate AI summary and title
     if (transcript && transcript.length > 20) {
       console.log(
         "processAudioEntry: Starting AI summarization and titling..."
       );
       try {
-        // Call your existing summarization action
         const insightsResult = await summarizeAndTitleEntry(
           createdOrUpdatedEntry.id,
           transcript
@@ -283,7 +317,6 @@ export async function processAudioEntry(
         );
       } catch (aiError: any) {
         console.error("processAudioEntry: AI summarization error:", aiError);
-        // Continue processing even if AI summarization fails, as it's a secondary step
       }
     } else {
       console.log(
@@ -291,29 +324,27 @@ export async function processAudioEntry(
       );
     }
 
-    // Step 5: Mark entry as processed in the database
+    // Mark entry as processed in the database
     console.log("processAudioEntry: Marking entry as processed...");
     const { error: processedError } = await supabase
       .from("entries")
       .update({ processed: true, updated_at: new Date().toISOString() })
       .eq("id", createdOrUpdatedEntry.id)
-      .eq("user_id", user.id); // Ensure only the owner can mark as processed
+      .eq("user_id", user.id);
 
     if (processedError) {
       console.error(
         "processAudioEntry: Failed to mark entry as processed:",
         processedError
       );
-      // This is a non-critical error, so we don't block the main success return
     }
     console.log("processAudioEntry: Entry marked as processed.");
 
-    // Return success and relevant data
     console.log("processAudioEntry: Audio processing completed successfully.");
     return {
       success: true,
       entry: createdOrUpdatedEntry,
-      audioUrl, // This is the public URL stored in the DB for client playback
+      audioUrl,
       transcript,
     };
   } catch (err: any) {
@@ -321,10 +352,11 @@ export async function processAudioEntry(
       "processAudioEntry: Caught unexpected error during audio processing:",
       err
     );
-    // Catch any unexpected errors during the entire process
     return {
       success: false,
-      error: "Unexpected error during audio processing.",
+      error: `Error during audio processing: ${
+        err.message || "An unknown error occurred."
+      }`,
     };
   }
 }

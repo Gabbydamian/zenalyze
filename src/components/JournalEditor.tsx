@@ -1,5 +1,3 @@
-// src/components/JournalEditor.tsx
-
 "use client";
 
 import { useEditor, EditorContent } from "@tiptap/react";
@@ -15,7 +13,21 @@ import { summarizeAndTitleEntry } from "@/app/actions/insights";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { JournalEntry } from "@/types/entries";
-import { Undo, Redo, Save, Loader2, Plus, FileText } from "lucide-react";
+import {
+  Undo,
+  Redo,
+  Save,
+  Loader2,
+  Plus,
+  FileText,
+  SmilePlus,
+} from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Slider } from "./ui/slider";
 
 type EditorState = {
   entryId: string | null;
@@ -36,9 +48,11 @@ export default function JournalEditor() {
     isSaving: false,
     lastSaveTime: null,
   });
+  const [showMoodPopover, setShowMoodPopover] = useState(false);
+  const [popoverMood, setPopoverMood] = useState("🤔");
+  const [popoverScore, setPopoverScore] = useState(5);
 
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isLoadingEntryRef = useRef(false);
 
   const { data, isLoading, error, refetch } = useQuery({
@@ -91,6 +105,30 @@ export default function JournalEditor() {
       setEditorState((prev) => ({ ...prev, isExpanded: true }));
     },
   });
+
+  const handleUpdateMood = useCallback(
+    async (score: number) => {
+      if (!editorState.entryId) {
+        toast.error("Entry not found. Cannot save mood.");
+        setShowMoodPopover(false);
+        return;
+      }
+
+      const updateResult = await updateJournalEntry(editorState.entryId, {
+        mood_score: score,
+      });
+
+      if (updateResult.success) {
+        toast.success("Mood and score saved!", { duration: 2000 });
+        await refetch();
+      } else {
+        console.error("Failed to update mood:", updateResult.error);
+        toast.error("Failed to save mood. Please try again.");
+      }
+      setShowMoodPopover(false);
+    },
+    [editorState.entryId, refetch]
+  );
 
   const handleAutoSave = useCallback(
     async (text: string) => {
@@ -186,6 +224,7 @@ export default function JournalEditor() {
     }
 
     // Save the entry first (this will update lastSavedText and isSaving state)
+    // The auto-save function will handle the actual DB call and state updates
     await handleAutoSave(text);
 
     // After auto-save, check if an entryId exists and if content is sufficient for AI
@@ -219,10 +258,8 @@ export default function JournalEditor() {
           });
         }
 
-        // --- IMPORTANT ADDITION: Mark entry as processed after AI insights ---
-        // This ensures consistency with audio entries.
+        // Mark entry as processed after AI insights
         if (result.titleSuccess || result.summarySuccess) {
-          // Only mark processed if AI insights were at least partially successful
           const updateProcessedResult = await updateJournalEntry(
             editorState.entryId,
             {
@@ -240,25 +277,16 @@ export default function JournalEditor() {
           }
         }
 
-        // Refetch to update the UI with new title and potentially processed status
         await refetch();
       } catch (error) {
-        // Dismiss the loading toast
         toast.dismiss(processingToast);
-
         console.error("AI processing failed:", error);
         toast.success("Entry saved successfully.", {
           description: "AI processing encountered an error.",
           duration: 3000,
         });
-        // Even if AI fails, the entry is still saved, so we might still want to mark it processed
-        // depending on what 'processed' truly means. For now, we only mark if AI was successful.
       }
     } else if (editorState.entryId) {
-      // If content is too short for AI, but entry is saved, still mark it processed if it's new
-      // Or if it's an existing entry and not yet processed, and not currently being processed by AI
-      // This ensures that even short text entries get marked as processed if they're "finalized" by a manual save.
-      // You might want to refine this logic based on your exact definition of 'processed'.
       const updateProcessedResult = await updateJournalEntry(
         editorState.entryId,
         {
@@ -274,13 +302,13 @@ export default function JournalEditor() {
           duration: 2000,
         });
       }
-      await refetch(); // Refetch to update UI with processed status
+      await refetch();
     }
   }, [
     editor,
     editorState.lastSavedText,
     editorState.entryId,
-    editorState.isSaving, // Added isSaving to dependencies
+    editorState.isSaving,
     handleAutoSave,
     refetch,
   ]);
@@ -298,7 +326,6 @@ export default function JournalEditor() {
 
     // Clear all timeouts
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
 
     // Reset state
     setEditorState({
@@ -309,6 +336,7 @@ export default function JournalEditor() {
       isSaving: false,
       lastSaveTime: null,
     });
+    setShowMoodPopover(false);
 
     // Clear editor and focus
     editor?.commands.clearContent();
@@ -337,7 +365,6 @@ export default function JournalEditor() {
 
         // Clear all timeouts
         if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-        if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
 
         // Update state first
         setEditorState({
@@ -406,7 +433,6 @@ export default function JournalEditor() {
 
     return () => {
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
       editor?.destroy();
     };
   }, [editor]);
@@ -430,14 +456,41 @@ export default function JournalEditor() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [editor, editorState.lastSavedText, editorState.isSaving]);
 
+  // Sync Popover state with current entry's mood score
+  useEffect(() => {
+    if (editorState.entryId) {
+      const currentEntry = data?.data?.find(e => e.id === editorState.entryId);
+      const moodScore = currentEntry?.mood_score || 0;
+      setPopoverScore(moodScore);
+      setPopoverMood(
+        moodScore === 0 ? "🤔" :
+        moodScore <= 3 ? "😢" :
+        moodScore <= 7 ? "😌" :
+        "😊"
+      );
+    }
+  }, [editorState.entryId, data?.data]);
+
+
   if (!mounted) return null;
 
   const hasUnsavedChanges =
     editor?.getText().trim() !== editorState.lastSavedText &&
     editorState.hasContent;
 
+  const currentEntry = data?.data?.find(
+    (entry) => entry.id === editorState.entryId
+  );
+  const currentTitle = currentEntry?.title || "Untitled Entry";
+  const moods = ["😊", "😌", "🤔", "😢", "😠"];
+
   return (
     <div className="space-y-4">
+      {/* Title */}
+      <h2 className="text-2xl font-semibold text-[var(--color-foreground)] -mt-2">
+        {currentTitle}
+      </h2>
+
       {/* Header */}
       <div className="w-full flex justify-between items-center">
         <div className="flex flex-col gap-1">
@@ -516,6 +569,70 @@ export default function JournalEditor() {
         >
           <Redo className="w-4 h-4" />
         </Button>
+
+        {/* Mood Popover */}
+        {editorState.entryId && (
+          <Popover open={showMoodPopover} onOpenChange={setShowMoodPopover}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="secondary"
+                className="flex items-center gap-2"
+                title="Set Mood"
+                onClick={() => {
+                  setShowMoodPopover(true);
+                  const currentMoodScore = currentEntry?.mood_score || 0;
+                  setPopoverScore(currentMoodScore);
+                  setPopoverMood(
+                    currentMoodScore === 0 ? "🤔" :
+                    currentMoodScore <= 3 ? "😢" :
+                    currentMoodScore <= 7 ? "😌" :
+                    "😊"
+                  );
+                }}
+              >
+                <SmilePlus className="w-4 h-4" />
+                Set Mood
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-4">
+              <div className="flex flex-col gap-4">
+                <div className="flex justify-between items-center">
+                  <h4 className="font-semibold text-sm">How are you feeling?</h4>
+                  <span className="text-2xl">{popoverMood}</span>
+                </div>
+                <div className="flex gap-2 justify-around">
+                  {moods.map((m) => (
+                    <Button
+                      key={m}
+                      variant="ghost"
+                      className={`text-2xl p-2 rounded-full ${
+                        popoverMood === m ? "bg-gray-200 dark:bg-gray-700" : ""
+                      }`}
+                      onClick={() => setPopoverMood(m)}
+                    >
+                      {m}
+                    </Button>
+                  ))}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs text-gray-500">
+                    Mood Score: <span className="font-medium">{popoverScore} / 10</span>
+                  </label>
+                  <Slider
+                    defaultValue={[popoverScore]}
+                    value={[popoverScore]}
+                    max={10}
+                    step={1}
+                    onValueChange={(val) => setPopoverScore(val[0])}
+                  />
+                </div>
+                <Button onClick={() => handleUpdateMood(popoverScore)}>Save Mood</Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
+        
+        {/* Manual Save Button */}
         <Button
           onClick={handleManualSave}
           disabled={
