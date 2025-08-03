@@ -97,7 +97,7 @@ export function SectionCards() {
       if (uniqueDates.length > 0) {
         let streak = 0;
         let maxStreak = 0;
-        let lastDate = new Date(today); // Start with today's date
+        // const lastDate = new Date(today); // Start with today's date
 
         // Check if there was an entry today
         if (uniqueDates[uniqueDates.length - 1].toDateString() === today.toDateString()) {
@@ -125,7 +125,7 @@ export function SectionCards() {
 
         // Recalculate current streak starting from today
         currentStreak = 0;
-        let checkDate = new Date(today);
+        const checkDate = new Date(today);
         if (uniqueDates.some(d => d.toDateString() === checkDate.toDateString())) {
             currentStreak = 1;
             checkDate.setDate(checkDate.getDate() - 1);
