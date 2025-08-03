@@ -1,7 +1,7 @@
 import { ChartAreaInteractive } from "@/components/chart-area-interactive";
-import { DataTable } from "@/components/data-table";
+import { DataTable } from "@/components/data-table"; // This will be updated
 import { SectionCards } from "@/components/section-cards";
-import data from "./data.json";
+// import data from "./data.json"; // REMOVE THIS LINE
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import {
@@ -15,20 +15,36 @@ import {
   IconSparkles,
 } from "@tabler/icons-react";
 
-import { getJournalEntries } from "@/app/actions/journal-actions";
+// Import your updated getDetailedEntries and DetailedEntryForFrontend
+import {
+  getDetailedEntries,
+} from "@/app/actions/journal-actions";
 import {
   QueryClient,
   dehydrate,
   HydrationBoundary,
 } from "@tanstack/react-query";
 
+// Import your columns definition
+import { columns } from "@/components/data-table"; // Import columns from data-table.tsx
+import { DetailedEntryForFrontend } from "@/types/entries";
+
 export default async function Page() {
   const queryClient = new QueryClient();
 
   await queryClient.prefetchQuery({
     queryKey: ["entries"],
-    queryFn: () => getJournalEntries(),
+    queryFn: () => getDetailedEntries(), // Use your new action
   });
+
+  // Get the data from the prefetched query
+  const entries = queryClient.getQueryData<DetailedEntryForFrontend[]>([
+    "entries",
+  ]);
+
+  // Provide a default empty array if entries is undefined/null initially
+  const initialTableData = entries || [];
+
   return (
     <div className="@container/main flex flex-1 flex-col gap-2">
       <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
@@ -86,7 +102,8 @@ export default async function Page() {
             <ChartAreaInteractive />
           </div>
           <HydrationBoundary state={dehydrate(queryClient)}>
-            <DataTable data={data} />
+            {/* Pass the fetched data to DataTable */}
+            <DataTable data={initialTableData} columns={columns} />
           </HydrationBoundary>
         </div>
       </div>

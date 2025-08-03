@@ -26,13 +26,10 @@ import {
   IconChevronRight,
   IconChevronsLeft,
   IconChevronsRight,
-  // IconCircleCheckFilled,
   IconDotsVertical,
   IconGripVertical,
   IconLayoutColumns,
-  // IconLoader,
   IconPlus,
-  // IconTrendingUp,
 } from "@tabler/icons-react";
 import {
   ColumnDef,
@@ -50,7 +47,6 @@ import {
   VisibilityState,
 } from "@tanstack/react-table";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
-// import { toast } from "sonner";
 import { z } from "zod";
 
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -100,9 +96,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DetailedEntryForFrontend } from "@/types/entries";
 
+// Use DetailedEntryForFrontend directly for your Zod schema
 export const schema = z.object({
-  id: z.number(),
+  id: z.string(), // Changed from number to string because Supabase IDs are UUIDs (strings)
   date: z.string(),
   mood: z.string(),
   score: z.number(),
@@ -114,7 +112,8 @@ export const schema = z.object({
 });
 
 // Create a separate component for the drag handle
-function DragHandle({ id }: { id: number }) {
+// Update the id type to string
+function DragHandle({ id }: { id: string }) {
   const { attributes, listeners } = useSortable({
     id,
   });
@@ -133,11 +132,13 @@ function DragHandle({ id }: { id: number }) {
   );
 }
 
-const columns: ColumnDef<z.infer<typeof schema>>[] = [
+// Define your columns using DetailedEntryForFrontend
+// Export them so you can import them in page.tsx
+export const columns: ColumnDef<DetailedEntryForFrontend>[] = [
   {
     id: "drag",
     header: () => null,
-    cell: ({ row }) => <DragHandle id={row.original.id} />,
+    cell: ({ row }) => <DragHandle id={row.original.id} />, // row.original.id is now string
   },
   {
     id: "select",
@@ -253,21 +254,35 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
   },
 ];
 
-function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
-  const { transform, transition, setNodeRef, isDragging } = useSortable({
+
+interface DraggableRowProps {
+  row: Row<DetailedEntryForFrontend>;
+}
+
+function DraggableRow({ row }: DraggableRowProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
     id: row.original.id,
   });
 
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
   return (
     <TableRow
-      data-state={row.getIsSelected() && "selected"}
-      data-dragging={isDragging}
       ref={setNodeRef}
-      className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition: transition,
-      }}
+      style={style}
+      data-state={row.getIsSelected() && "selected"}
+      className={isDragging ? "relative z-50" : ""}
     >
       {row.getVisibleCells().map((cell) => (
         <TableCell key={cell.id}>
@@ -278,10 +293,13 @@ function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
   );
 }
 
+// Update DataTable props to accept columns
 export function DataTable({
   data: initialData,
+  columns, // Accept columns as a prop
 }: {
-  data: z.infer<typeof schema>[];
+  data: DetailedEntryForFrontend[]; // Use DetailedEntryForFrontend
+  columns: ColumnDef<DetailedEntryForFrontend>[]; // Type columns prop
 }) {
   const [data, setData] = React.useState(() => initialData);
   const [rowSelection, setRowSelection] = React.useState({});
@@ -303,13 +321,13 @@ export function DataTable({
   );
 
   const dataIds = React.useMemo<UniqueIdentifier[]>(
-    () => data?.map(({ id }) => id) || [],
+    () => data?.map(({ id }) => id) || [], // id is now string
     [data]
   );
 
   const table = useReactTable({
     data,
-    columns,
+    columns, // Use the columns prop
     state: {
       sorting,
       columnVisibility,
@@ -317,7 +335,7 @@ export function DataTable({
       columnFilters,
       pagination,
     },
-    getRowId: (row) => row.id.toString(),
+    getRowId: (row) => row.id.toString(), // Ensure ID is string for dnd-kit
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
@@ -336,9 +354,14 @@ export function DataTable({
     const { active, over } = event;
     if (active && over && active.id !== over.id) {
       setData((data) => {
-        const oldIndex = dataIds.indexOf(active.id);
-        const newIndex = dataIds.indexOf(over.id);
-        return arrayMove(data, oldIndex, newIndex);
+        // Find indices using the string ID
+        const oldIndex = data.findIndex((item) => item.id === active.id);
+        const newIndex = data.findIndex((item) => item.id === over.id);
+
+        if (oldIndex !== -1 && newIndex !== -1) {
+          return arrayMove(data, oldIndex, newIndex);
+        }
+        return data; // Return original data if IDs not found (shouldn't happen with correct IDs)
       });
     }
   }
@@ -572,7 +595,8 @@ const moodChartConfig = {
   },
 } satisfies ChartConfig;
 
-function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
+// Update TableCellViewer to use DetailedEntryForFrontend
+function TableCellViewer({ item }: { item: DetailedEntryForFrontend }) {
   const isMobile = useIsMobile();
 
   return (
